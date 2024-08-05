@@ -1,0 +1,14 @@
+{
+    "name": "potemkinyaa/cloud-filer",
+    "autoload": {
+        "psr-4": {
+            "Potemkinyaa\\CloudFiler\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "y"
+        }
+    ],
+    "require": {}
+}

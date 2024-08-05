@@ -7,30 +7,28 @@ use PDO, PDOException;
 abstract class DB {
     protected string $tableName;
     protected string $primaryKey = "id";
-    private PDO $conn;
+    private static ?PDO $conn = null;
 
-    public function __construct()
+    private static function getConnection(): PDO
     {
-        $this->getConnection();
-    }
-
-    private function getConnection(): void
-    {
-        try {
-            $this->conn = new PDO(
-                "mysql:host=" . getenv("DB_HOST", "localhost"),
-                getenv("DB_USER", "root"),
-                getenv("DB_PASSWORD", "")
-            );
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            echo "Connection failed: " . $e->getMessage();
+        if (self::$conn === null) {
+            try {
+                self::$conn = new PDO(
+                    "mysql:host=" . getenv("DB_HOST", "localhost"),
+                    getenv("DB_USER", "root"),
+                    getenv("DB_PASSWORD", "")
+                );
+                self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                echo "Connection failed: " . $e->getMessage();
+            }
         }
+        return self::$conn;
     }
 
     protected function executeQuery(string $sql, array $params = []): array
     {
-        $stmt = $this->conn->prepare($sql);
+        $stmt = self::getConnection()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

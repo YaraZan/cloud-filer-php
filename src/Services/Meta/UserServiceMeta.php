@@ -2,9 +2,8 @@
 
 namespace App\Services\Meta;
 
-use App\Repositories\User;
-
 interface UserServiceMeta {
-    private User
+    public function getAllUsers(): array;
+    public function getUserById(int $id): object;
 }
 ?>

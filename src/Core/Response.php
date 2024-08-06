@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-abstract class Response
+class Response
 {
     private $data;
     private int $statusCode = 200;

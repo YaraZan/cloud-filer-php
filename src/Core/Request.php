@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-abstract class Request
+class Request
 {
     protected $data = null;
     private string $url = "/";

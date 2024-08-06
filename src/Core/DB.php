@@ -4,7 +4,7 @@ namespace App\Core;
 
 use PDO, PDOException;
 
-abstract class DB {
+class DB {
     protected string $tableName;
     protected string $primaryKey = "id";
     private static ?PDO $conn = null;

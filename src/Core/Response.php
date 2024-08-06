@@ -5,8 +5,15 @@ namespace App\Core;
 abstract class Response
 {
     private $data;
-    private array $headers = [];
     private int $statusCode = 200;
+    private array $headers = [];
+
+    public function __construct($data, int $statusCode, array $headers)
+    {
+        $this->data = $data;
+        $this->statusCode = $statusCode;
+        $this->headers = $headers;
+    }
 
     public function setData($data): void
     {

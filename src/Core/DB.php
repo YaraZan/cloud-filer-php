@@ -26,42 +26,47 @@ class DB {
         return self::$conn;
     }
 
-    protected function executeQuery(string $sql, array $params = []): array
+    protected function executeQuery(string $sql, array $params = [], bool $fetchAll=true): mixed
     {
         $stmt = self::getConnection()->prepare($sql);
         $stmt->execute($params);
+
+        if (!$fetchAll) {
+            return $stmt->fetchObject(PDO::FETCH_ASSOC);
+        }
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findBy(string $query): string
+    public function findBy(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
         $res = $this->executeQuery($sql);
 
-        return json_encode($res);
+        return $res;
     }
 
-    public function findOneBy(string $query): string
+    public function findOneBy(string $query): object
     {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query . " LIMIT 1";
-        $res = $this->executeQuery($sql);
+        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
+        $res = $this->executeQuery($sql, [], false);
 
-        return json_encode($res);
+        return $res;
     }
 
-    public function findAll(): string
+    public function findAll(): array
     {
         $sql = "SELECT * FROM " . $this->tableName;
         $res = $this->executeQuery($sql);
 
-        return json_encode($res);
+        return $res;
     }
 
-    public function find(int $id): string
+    public function find(int $id): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
         $res = $this->executeQuery($sql, [$id]);
 
-        return json_encode($res);
+        return $res;
     }
 }

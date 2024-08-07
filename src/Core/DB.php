@@ -4,7 +4,8 @@ namespace App\Core;
 
 use PDO, PDOException;
 
-class DB {
+class DB
+{
     protected string $tableName;
     protected string $primaryKey = "id";
     private static ?PDO $conn = null;
@@ -26,7 +27,7 @@ class DB {
         return self::$conn;
     }
 
-    protected function executeQuery(string $sql, array $params = [], bool $fetchAll=true): mixed
+    protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): mixed
     {
         $stmt = self::getConnection()->prepare($sql);
         $stmt->execute($params);
@@ -68,5 +69,31 @@ class DB {
         $res = $this->executeQuery($sql, [], false);
 
         return $res;
+    }
+
+    public function update(int $id, array $data): void
+    {
+        $sql = "UPDATE " . $this->tableName . " SET ";
+
+        $setClauses = [];
+        $params = [];
+
+        foreach ($data as $key => $value) {
+            $setClauses[] = "$key = ?";
+            $params[] = $value;
+        }
+
+        $sql .= implode(", ", $setClauses);
+        $sql .= " WHERE " . $this->primaryKey . " = ?";
+        $params[] = $id;
+
+        $this->executeQuery($sql, $params);
+    }
+
+    public function delete(int $id): void
+    {
+        $sql = "DELETE FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
+
+        $this->executeQuery($sql, [$id]);
     }
 }

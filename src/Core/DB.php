@@ -38,22 +38,6 @@ class DB {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findBy(string $query): array
-    {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql);
-
-        return $res;
-    }
-
-    public function findOneBy(string $query): object
-    {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql, [], false);
-
-        return $res;
-    }
-
     public function findAll(): array
     {
         $sql = "SELECT * FROM " . $this->tableName;
@@ -62,10 +46,26 @@ class DB {
         return $res;
     }
 
-    public function find(int $id): array
+    public function findOne(int $id): object
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
-        $res = $this->executeQuery($sql, [$id]);
+        $res = $this->executeQuery($sql, [$id], false);
+
+        return $res;
+    }
+
+    public function findWhere(string $query): array
+    {
+        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
+        $res = $this->executeQuery($sql);
+
+        return $res;
+    }
+
+    public function findOneWhere(string $query): object
+    {
+        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
+        $res = $this->executeQuery($sql, [], false);
 
         return $res;
     }

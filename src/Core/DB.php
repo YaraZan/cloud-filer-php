@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use PDO, PDOException;
+use RuntimeException;
 
 class DB
 {
@@ -29,14 +30,18 @@ class DB
 
     protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): mixed
     {
-        $stmt = self::getConnection()->prepare($sql);
-        $stmt->execute($params);
-
-        if (!$fetchAll) {
-            return $stmt->fetchObject(PDO::FETCH_ASSOC);
+        try {
+            $stmt = self::getConnection()->prepare($sql);
+            $stmt->execute($params);
+    
+            if (!$fetchAll) {
+                return $stmt->fetchObject(PDO::FETCH_ASSOC);
+            }
+    
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \RuntimeException("Database query error: " . $e->getMessage());
         }
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findAll(): array
@@ -69,6 +74,23 @@ class DB
         $res = $this->executeQuery($sql, [], false);
 
         return $res;
+    }
+
+    public function create(array $data): void {
+        $sql = "INSERT INTO " . $this->tableName . " (";
+        $columns = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($data as $key => $value) {
+            $columns[] = $key;
+            $placeholders[] = "?";
+            $params[] = $value;
+        }
+
+        $sql .= implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+
+        $this->executeQuery($sql, $params);
     }
 
     public function update(int $id, array $data): void

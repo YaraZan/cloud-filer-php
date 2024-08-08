@@ -71,6 +71,23 @@ class DB
         return $res;
     }
 
+    public function create(array $data): void {
+        $sql = "INSERT INTO " . $this->tableName . " (";
+        $columns = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($data as $key => $value) {
+            $columns[] = $key;
+            $placeholders[] = "?";
+            $params[] = $value;
+        }
+
+        $sql .= implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
+
+        $this->executeQuery($sql, $params);
+    }
+
     public function update(int $id, array $data): void
     {
         $sql = "UPDATE " . $this->tableName . " SET ";

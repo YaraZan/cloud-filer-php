@@ -11,6 +11,11 @@ class DB
     protected string $primaryKey = "id";
     private static ?PDO $conn = null;
 
+    public function table(): string
+    {
+        return $this->tableName;
+    }
+
     private static function getConnection(): PDO
     {
         if (self::$conn === null) {

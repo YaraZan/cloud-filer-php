@@ -8,7 +8,7 @@ class Response
     private int $statusCode = 200;
     private array $headers = [];
 
-    public function __construct($data, int $statusCode, array $headers)
+    public function __construct($data, int $statusCode, array $headers = [])
     {
         $this->data = $data;
         $this->statusCode = $statusCode;

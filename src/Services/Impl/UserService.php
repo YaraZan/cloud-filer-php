@@ -15,6 +15,16 @@ class UserService implements UserServiceMeta {
     
     private UserRepository $repository;
 
+    protected function validateCredentials($credentials): void
+    {
+        if (!Validator::validateEmail($credentials['email'])) {
+            throw new InvalidEmailFormatException();
+        }
+        if (!Validator::validatePassword($credentials['password'])) {
+            throw new InvalidPasswordFormatException();
+        }
+    }
+
     public function getAllUsers(): array
     {
         return $this->repository->findAll();
@@ -27,12 +37,8 @@ class UserService implements UserServiceMeta {
 
     public function register($credentials): void
     {
-        if (!Validator::validateEmail($credentials['email'])) {
-            throw new InvalidEmailFormatException();
-        }
-        if (!Validator::validatePassword($credentials['password'])) {
-            throw new InvalidPasswordFormatException();
-        }
+        $this->validateCredentials($credentials);
+
         if ($credentials['password'] !== $credentials['confirm_password']) {
             throw new PasswordConfirmationException();
         }
@@ -51,7 +57,7 @@ class UserService implements UserServiceMeta {
 
     public function login($credentials): void
     {
-        $sql = "SELECT * FROM users WHERE email = " . $credentials["email"];
+        
     }
 
     public function logout(): void

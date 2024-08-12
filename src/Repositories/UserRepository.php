@@ -10,7 +10,7 @@ class UserRepository extends DB
 
     public function findAll(): array
     {
-        $sql = "SELECT name, email from " . $this->tableName;
+        $sql = "SELECT id, name, email from " . $this->tableName;
         $res = $this->executeQuery($sql);
 
         return $res;
@@ -18,7 +18,7 @@ class UserRepository extends DB
 
     public function findOne(int $id): object
     {
-        $sql = "SELECT name, email, bio from " . $this->tableName;
+        $sql = "SELECT id, name, email, bio from " . $this->tableName;
         $res = $this->executeQuery($sql, [$id], false);
 
         return $res;

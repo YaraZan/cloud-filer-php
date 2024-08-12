@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+require_once __DIR__ . "/../Config/config.php";
+
 use PDO, PDOException;
 use RuntimeException;
 
@@ -21,9 +23,9 @@ class DB
         if (self::$conn === null) {
             try {
                 self::$conn = new PDO(
-                    "mysql:host=" . getenv("DB_HOST", "localhost"),
-                    getenv("DB_USER", "root"),
-                    getenv("DB_PASSWORD", "")
+                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+                    DB_USER,
+                    DB_PASS
                 );
                 self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {

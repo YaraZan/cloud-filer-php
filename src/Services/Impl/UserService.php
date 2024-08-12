@@ -11,8 +11,9 @@ use App\Repositories\UserRepository;
 use App\Services\Meta\UserServiceMeta;
 use App\Utils\Validator;
 
-class UserService implements UserServiceMeta {
-    
+class UserService implements UserServiceMeta
+{
+
     private UserRepository $repository;
 
     protected function validateCredentials($credentials): void
@@ -32,7 +33,7 @@ class UserService implements UserServiceMeta {
 
     public function getUser(int $id): object
     {
-        return $this->repository->findOne($id);   
+        return $this->repository->findOne($id);
     }
 
     public function register($credentials): void
@@ -55,10 +56,7 @@ class UserService implements UserServiceMeta {
         ]);
     }
 
-    public function login($credentials): void
-    {
-        
-    }
+    public function login($credentials): void {}
 
     public function logout(): void
     {
@@ -75,4 +73,3 @@ class UserService implements UserServiceMeta {
         $this->repository->update($data);
     }
 }
-?>

@@ -79,7 +79,11 @@ class UserService implements UserServiceMeta
 
     public function reset_password(string $old_password, string $new_password): void
     {
-        // impl reset password logic
+        if ($old_password !== $new_password) {
+            throw new PasswordConfirmationException();
+        }
+
+        $this->updateAuthorizedUser(["password" => $new_password]);
     }
 
     public function updateAuthorizedUser($data): void

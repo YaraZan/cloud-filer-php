@@ -74,16 +74,20 @@ class UserService implements UserServiceMeta
 
     public function logout(): void
     {
-        // impl logout logic
+        Session::destroy();
     }
 
     public function reset_password(string $old_password, string $new_password): void
     {
-        // impl reset password logic
+        if ($old_password !== $new_password) {
+            throw new PasswordConfirmationException();
+        }
+
+        $this->updateAuthorizedUser(["password" => $new_password]);
     }
 
     public function updateAuthorizedUser($data): void
     {
-        $this->repository->update($data);
+        $this->repository->update(Session::get("uid"), $data);
     }
 }

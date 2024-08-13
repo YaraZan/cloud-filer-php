@@ -84,6 +84,6 @@ class UserService implements UserServiceMeta
 
     public function updateAuthorizedUser($data): void
     {
-        $this->repository->update($data);
+        $this->repository->update(Session::get("uid"), $data);
     }
 }

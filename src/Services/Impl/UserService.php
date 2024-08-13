@@ -74,7 +74,7 @@ class UserService implements UserServiceMeta
 
     public function logout(): void
     {
-        // impl logout logic
+        Session::destroy();
     }
 
     public function reset_password(string $old_password, string $new_password): void

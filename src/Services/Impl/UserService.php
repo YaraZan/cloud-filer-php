@@ -3,7 +3,9 @@
 namespace App\Services\Impl;
 
 use App\Core\Response;
+use App\Core\Session;
 use App\Exceptions\EmailAlreadyExistsException;
+use App\Exceptions\EmailDoesntExistException;
 use App\Exceptions\InvalidEmailFormatException;
 use App\Exceptions\InvalidPasswordFormatException;
 use App\Exceptions\PasswordConfirmationException;
@@ -54,9 +56,21 @@ class UserService implements UserServiceMeta
             "email" => $credentials["email"],
             "password" => Validator::hashPassword($credentials["password"]),
         ]);
+
+        $this->login($credentials);
     }
 
-    public function login($credentials): void {}
+    public function login($credentials): void 
+    {
+        $this->validateCredentials($credentials);
+        
+        $user = $this->repository->findOneWhere("email = ", $credentials['email']);
+        if (!isset($user)) {
+            throw new EmailDoesntExistException();
+        }
+
+        Session::create($user["id"]);
+    }
 
     public function logout(): void
     {

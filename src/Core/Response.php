@@ -7,9 +7,11 @@ class Response
     private $data;
     private int $statusCode = 200;
     private array $headers = [];
+    private string $template;
 
-    public function __construct($data, int $statusCode, array $headers = [])
+    public function __construct(string $template, $data, int $statusCode, array $headers = [])
     {
+        $this->template = $template;
         $this->data = $data;
         $this->statusCode = $statusCode;
         $this->headers = $headers;
@@ -53,20 +55,13 @@ class Response
             header("{$key}: {$value}");
         }
 
-        if (!empty($this->data)) {
-            if (is_array($this->data) || is_object($this->data)) {
-                echo json_encode($this->data);
-            }
-            echo $this->data;
-        }
+        $this->render();
     }
 
-    public function render(string $template)
+    public function render(): void
     {
-        http_response_code($this->statusCode);
-        
         extract($this->data);
 
-        include __DIR__ . "../../Templates/" . $template;
+        include __DIR__ . "../../Templates/" . $this->template;
     }
 }

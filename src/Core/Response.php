@@ -60,4 +60,13 @@ class Response
             echo $this->data;
         }
     }
+
+    public function render(string $template)
+    {
+        http_response_code($this->statusCode);
+        
+        extract($this->data);
+
+        include __DIR__ . "../../Templates/" . $template;
+    }
 }

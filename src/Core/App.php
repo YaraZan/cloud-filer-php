@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Services\Impl\UserService;
 use Exception;
 
 class App
@@ -10,7 +11,7 @@ class App
 
     public function __construct()
     {
-        // Register services here
+        self::registerService('userService', UserService::class);
     }
 
     public static function registerService(string $name, $service): void

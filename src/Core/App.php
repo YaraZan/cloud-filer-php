@@ -2,29 +2,23 @@
 
 namespace App\Core;
 
-use App\Services\Impl\UserService;
 use Exception;
 
 class App
 {
-    private static array $registry;
+    private static array $services;
 
-    public function __construct()
+    public static function registerServices(): void
     {
-        self::registerService('userService', UserService::class);
-    }
-
-    public static function registerService(string $name, $service): void
-    {
-        self::$registry[$name] = $service;
+        self::$services['userService'] = new \App\Services\Impl\UserService();
     }
 
     public static function getService(string $name)
     {
-        if (!isset(self::$registry[$name])) {
+        if (!isset(self::$services[$name])) {
             throw new Exception("Service not found: " . $name);
         }
 
-        return self::$registry[$name];
+        return self::$services[$name];
     }
 }

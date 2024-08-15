@@ -5,6 +5,7 @@ use App\Core\Request;
 use App\Core\Response;
 
 require_once 'vendor/autoload.php';
+require_once 'src/Config/config.php';
 
 $routes = [
     "GET /login" => [AuthController::class, "view"]
@@ -16,7 +17,7 @@ $data = $method === 'POST' ? $_POST : $_GET;
 
 $request = new Request($data, $uri, $method);
 
-$routeKey = $method . ' ' . strtok($uri, '?');
+$routeKey = $_SERVER['REQUEST_METHOD'] . ' ' . str_replace(BASE_URI, '', $_SERVER['REQUEST_URI']);
 if (isset($routes[$routeKey])) {
     [$controller, $method] = $routes[$routeKey];
     $controllerInstance = new $controller();

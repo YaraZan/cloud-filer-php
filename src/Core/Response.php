@@ -55,13 +55,6 @@ class Response
             header("{$key}: {$value}");
         }
 
-        $this->render();
-    }
-
-    public function render(): void
-    {
-        extract($this->data);
-
-        include __DIR__ . "../../Templates/" . $this->template;
+        echo json_encode($this->data);
     }
 }

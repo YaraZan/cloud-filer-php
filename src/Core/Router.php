@@ -23,11 +23,22 @@ class Router
     {
         $method = $request->getMethod();
         $route = $request->getRoute();
-        $handler = $this->routes[$method . ' ' . $route];
+        $routeKey = $method . ' ' . $route;
 
-        [$controllerClass, $action] = $handler;
-        $controller = new $controllerClass();
+        if (isset($this->routes[$routeKey])) {
+            $handler = $this->routes[$routeKey];
 
-        return new $controller->$action($request);
+            [$controllerClass, $action] = $handler;
+            $controller = new $controllerClass();
+    
+            $response = $controller->$action($request);
+            
+            if ($response instanceof Response) {
+                $response->send();
+            }
+        } else {
+            http_response_code(404);
+            echo "404 Not Found";
+        }
     }
 }

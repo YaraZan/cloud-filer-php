@@ -1,11 +1,14 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Core\App;
 use App\Core\Request;
 use App\Core\Response;
 
 require_once 'vendor/autoload.php';
 require_once 'src/Config/config.php';
+
+App::registerServices();
 
 $routes = [
     "GET /login" => [AuthController::class, "view"]

@@ -2,12 +2,12 @@
     "name": "potemkinyaa/cloud-filer",
     "autoload": {
         "psr-4": {
-            "Potemkinyaa\\CloudFiler\\": "src/"
+            "App\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "y"
+            "name": "YaraZan"
         }
     ],
     "require": {}

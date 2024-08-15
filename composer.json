@@ -10,5 +10,7 @@
             "name": "YaraZan"
         }
     ],
-    "require": {}
+    "require": {
+        "firebase/php-jwt": "^6.10"
+    }
 }

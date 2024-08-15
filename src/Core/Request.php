@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+require_once __DIR__ . "/../Config/config.php";
+
 class Request
 {
     protected $data = null;
@@ -22,8 +24,7 @@ class Request
 
     public function getRoute(): string
     {
-        $explodedUrlArr = explode("/", $this->url);
-        return "/" . $explodedUrlArr[count($explodedUrlArr) - 1];
+        return str_replace(BASE_URI, '', $this->url);
     }
 
     public function getMethod(): string

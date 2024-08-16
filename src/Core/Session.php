@@ -2,8 +2,12 @@
 
 namespace App\Core;
 
+use App\Utils\Tokenizer;
+
 class Session
 {
+    public static int $expiresInDays;
+
     public static function start(): void
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -14,8 +18,18 @@ class Session
     public static function create(array $user): void
     {
         self::start();
-        $_SESSION['uid'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
+
+        $token = [
+            "exp" => round(microtime(true) * 1000) + (self::$expiresInDays * 24 * 60 * 60 * 1000),
+            "iat" => round(microtime()),
+            "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
+            "uid" => $user["id"],
+            "username" => $user["username"],
+        ];
+
+        $_SESSION["token"] = Tokenizer::encode($token);
+        $_SESSION["rlim_" . $user["id"]] = [];
+
         self::regenerate();
     }
 
@@ -49,11 +63,5 @@ class Session
         if (session_status() == PHP_SESSION_ACTIVE) {
             session_regenerate_id(true);
         }
-    }
-
-    public static function unset(string $key): void
-    {
-        self::start();
-        unset($_SESSION[$key]);
     }
 }

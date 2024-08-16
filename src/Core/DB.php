@@ -9,13 +9,13 @@ use RuntimeException;
 
 class DB
 {
-    protected string $tableName;
-    protected string $primaryKey = "id";
+    protected static string $tableName;
+    protected static string $primaryKey = "id";
     private static ?PDO $conn = null;
 
-    public function table(): string
+    public static function table(): string
     {
-        return $this->tableName;
+        return self::$tableName;
     }
 
     private static function getConnection(): PDO
@@ -51,40 +51,40 @@ class DB
         }
     }
 
-    public function findAll(): array
+    public static function findAll(): array
     {
-        $sql = "SELECT * FROM " . $this->tableName;
-        $res = $this->executeQuery($sql);
+        $sql = "SELECT * FROM " . self::$tableName;
+        $res = self::executeQuery($sql);
 
         return $res;
     }
 
-    public function findOne(int $id): object
+    public static function findOne(int $id): array
     {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
-        $res = $this->executeQuery($sql, [$id], false);
+        $sql = "SELECT * FROM " . self::$tableName . " WHERE " . self::$primaryKey . " = ?";
+        $res = self::executeQuery($sql, [$id], false);
 
         return $res;
     }
 
-    public function findWhere(string $query): array
+    public static function findWhere(string $query): array
     {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql);
+        $sql = "SELECT * FROM " . self::$tableName . " WHERE " . $query;
+        $res = self::executeQuery($sql);
 
         return $res;
     }
 
-    public function findOneWhere(string $query): object
+    public static function findOneWhere(string $query): array
     {
-        $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql, [], false);
+        $sql = "SELECT * FROM " . self::$tableName . " WHERE " . $query;
+        $res = self::executeQuery($sql, [], false);
 
         return $res;
     }
 
-    public function create(array $data): void {
-        $sql = "INSERT INTO " . $this->tableName . " (";
+    public static function create(array $data): void {
+        $sql = "INSERT INTO " . self::$tableName . " (";
         $columns = [];
         $placeholders = [];
         $params = [];
@@ -97,12 +97,12 @@ class DB
 
         $sql .= implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
 
-        $this->executeQuery($sql, $params);
+        self::executeQuery($sql, $params);
     }
 
-    public function update(int $id, array $data): void
+    public static function update(int $id, array $data): void
     {
-        $sql = "UPDATE " . $this->tableName . " SET ";
+        $sql = "UPDATE " . self::$tableName . " SET ";
 
         $setClauses = [];
         $params = [];
@@ -113,16 +113,16 @@ class DB
         }
 
         $sql .= implode(", ", $setClauses);
-        $sql .= " WHERE " . $this->primaryKey . " = ?";
+        $sql .= " WHERE " . self::$primaryKey . " = ?";
         $params[] = $id;
 
-        $this->executeQuery($sql, $params);
+        self::executeQuery($sql, $params);
     }
 
-    public function delete(int $id): void
+    public static function delete(int $id): void
     {
-        $sql = "DELETE FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
+        $sql = "DELETE FROM " . self::$tableName . " WHERE " . self::$primaryKey . " = ?";
 
-        $this->executeQuery($sql, [$id]);
+        self::executeQuery($sql, [$id]);
     }
 }

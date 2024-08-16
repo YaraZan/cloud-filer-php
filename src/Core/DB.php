@@ -59,7 +59,7 @@ class DB
         return $res;
     }
 
-    public function findOne(int $id): object
+    public function findOne(int $id): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
         $res = $this->executeQuery($sql, [$id], false);
@@ -75,7 +75,7 @@ class DB
         return $res;
     }
 
-    public function findOneWhere(string $query): object
+    public function findOneWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
         $res = $this->executeQuery($sql, [], false);
@@ -83,7 +83,8 @@ class DB
         return $res;
     }
 
-    public function create(array $data): void {
+    public function create(array $data): void 
+    {
         $sql = "INSERT INTO " . $this->tableName . " (";
         $columns = [];
         $placeholders = [];

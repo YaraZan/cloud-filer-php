@@ -6,7 +6,7 @@ use App\Utils\Tokenizer;
 
 class Session
 {
-    public static int $expiresInDays;
+    private static int $expiresInDays = 7;
 
     public static function start(): void
     {
@@ -50,12 +50,6 @@ class Session
         self::start();
         session_unset();
         session_destroy();
-    }
-
-    public static function isAuthorized(): bool
-    {
-        self::start();
-        return isset($_SESSION['uid']);
     }
 
     private static function regenerate(): void

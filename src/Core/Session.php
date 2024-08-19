@@ -35,18 +35,14 @@ class Session
         self::regenerate();
     }
 
-    public static function authorizedUser(): array
+    public static function authorizedUser(): ?array
     {
         $token = self::get("token"); 
-
-        if (!isset($token)) {
-            throw new TokenInvalidException();
-        }
 
         return $token["user"] ?? null;
     }
 
-    public static function get(string $key)
+    public static function get(string $key): mixed
     {
         self::start();
         return $_SESSION[$key] ?? null;

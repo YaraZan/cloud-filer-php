@@ -20,25 +20,28 @@ class Router
     }
 
     public function processRequest(Request $request)
-    {
+    {   
         $method = $request->getMethod();
         $route = $request->getRoute();
         $routeKey = $method . ' ' . $route;
 
-        if (isset($this->routes[$routeKey])) {
-            $handler = $this->routes[$routeKey];
-
-            [$controllerClass, $action] = $handler;
-            $controller = new $controllerClass();
-    
-            $response = $controller->$action($request);
-            
-            if ($response instanceof Response) {
-                $response->send();
-            }
-        } else {
+        if (!isset($this->routes[$routeKey])) {
             http_response_code(404);
             echo "404 Not Found";
+        }
+
+        [$controllerClass, $action, $middleware] = $this->routes[$routeKey];
+
+        if (isset($middleware)) {
+            $middleware->handle($request);
+        }
+        
+        $controller = new $controllerClass();
+
+        $response = $controller->$action($request);
+        
+        if ($response instanceof Response) {
+            $response->send();
         }
     }
 }

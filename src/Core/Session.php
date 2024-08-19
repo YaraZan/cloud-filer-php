@@ -2,8 +2,15 @@
 
 namespace App\Core;
 
+use App\Exceptions\TokenInvalidException;
+use App\Repositories\UserRepository;
+use App\Utils\Tokenizer;
+use Exception;
+
 class Session
 {
+    private static int $expiresInDays = 7;
+
     public static function start(): void
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -14,9 +21,29 @@ class Session
     public static function create(array $user): void
     {
         self::start();
-        $_SESSION['uid'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
+
+        $token = [
+            "exp" => round(microtime(true) * 1000) + (self::$expiresInDays * 24 * 60 * 60 * 1000),
+            "iat" => round(microtime()),
+            "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
+            "user" => $user,
+        ];
+
+        $_SESSION["token"] = Tokenizer::encode($token);
+        $_SESSION["rlim_" . $user["id"]] = [];
+
         self::regenerate();
+    }
+
+    public static function authorizedUser(): array
+    {
+        $token = self::get("token"); 
+
+        if (!isset($token)) {
+            throw new TokenInvalidException();
+        }
+
+        return $token["user"] ?? null;
     }
 
     public static function get(string $key)
@@ -38,22 +65,10 @@ class Session
         session_destroy();
     }
 
-    public static function isAuthorized(): bool
-    {
-        self::start();
-        return isset($_SESSION['uid']);
-    }
-
     private static function regenerate(): void
     {
         if (session_status() == PHP_SESSION_ACTIVE) {
             session_regenerate_id(true);
         }
-    }
-
-    public static function unset(string $key): void
-    {
-        self::start();
-        unset($_SESSION[$key]);
     }
 }

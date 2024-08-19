@@ -33,7 +33,7 @@ class UserService implements UserServiceMeta
         return $this->repository->findAll();
     }
 
-    public function getUser(int $id): object
+    public function getUser(int $id): array
     {
         return $this->repository->findOne($id);
     }
@@ -69,7 +69,7 @@ class UserService implements UserServiceMeta
             throw new EmailDoesntExistException();
         }
 
-        Session::create($user["id"]);
+        Session::create($user);
     }
 
     public function logout(): void
@@ -88,6 +88,8 @@ class UserService implements UserServiceMeta
 
     public function updateAuthorizedUser($data): void
     {
-        $this->repository->update(Session::get("uid"), $data);
+        $user = Session::authorizedUser();
+
+        $this->repository->update((int) $user["id"], $data);
     }
 }

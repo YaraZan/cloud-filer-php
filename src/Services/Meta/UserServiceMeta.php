@@ -5,7 +5,7 @@ namespace App\Services\Meta;
 interface UserServiceMeta
 {
     public function getAllUsers(): array;
-    public function getUser(int $id): object;
+    public function getUser(int $id): array;
     public function updateAuthorizedUser($data): void;
     public function login($credentials): void;
     public function register($credentials): void;

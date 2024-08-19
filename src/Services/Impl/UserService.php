@@ -7,6 +7,7 @@ use App\Core\Session;
 use App\Exceptions\EmailAlreadyExistsException;
 use App\Exceptions\EmailDoesntExistException;
 use App\Exceptions\InvalidEmailFormatException;
+use App\Exceptions\InvalidPasswordException;
 use App\Exceptions\InvalidPasswordFormatException;
 use App\Exceptions\PasswordConfirmationException;
 use App\Repositories\UserRepository;
@@ -77,9 +78,17 @@ class UserService implements UserServiceMeta
         Session::destroy();
     }
 
-    public function reset_password(string $old_password, string $new_password): void
+    public function resetPassword(string $old_password, string $new_password, string $confirm_password): void
     {
-        if ($old_password !== $new_password) {
+        $authUser = Session::authorizedUser();
+        
+        $user = $this->repository->findOne($authUser["id"]);
+
+        if (!Validator::verifyPasswords($old_password, $user["password"])) {
+            throw new InvalidPasswordException();
+        }
+
+        if ($new_password !== $confirm_password) {
             throw new PasswordConfirmationException();
         }
 

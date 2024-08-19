@@ -10,5 +10,5 @@ interface UserServiceMeta
     public function login($credentials): void;
     public function register($credentials): void;
     public function logout(): void;
-    public function reset_password(string $old_password, string $new_password): void;
+    public function resetPassword(string $old_password, string $new_password, string $confirm_password): void;
 }

@@ -35,7 +35,7 @@ class Session
         self::regenerate();
     }
 
-    public static function authorizedUser(): array | null
+    public static function authorizedUser(): array
     {
         $token = self::get("token"); 
 

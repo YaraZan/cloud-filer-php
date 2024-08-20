@@ -9,7 +9,7 @@ class Route
     private $middleware;
 
     public function __construct($controller, string $method, $middleware = null) {
-        $this->controller = $controller;
+        $this->controller = new $controller();
         $this->method = $method;
         $this->middleware = $middleware;
     }

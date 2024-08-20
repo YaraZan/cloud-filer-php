@@ -20,6 +20,10 @@ class UserService implements UserServiceMeta
 
     private UserRepository $repository;
 
+    public function __construct() {
+        $this->repository = new UserRepository();
+    }
+
     protected function validateCredentials($credentials): void
     {
         if (!Validator::validateEmail($credentials['email'])) {

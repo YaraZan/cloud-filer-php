@@ -4,9 +4,9 @@ namespace App\Core;
 
 class Route 
 {
-    private Controller $controller;
+    private $controller;
     private string $method;
-    private ?Middleware $middleware;
+    private $middleware;
 
     public function __construct($controller, string $method, $middleware = null) {
         $this->controller = $controller;

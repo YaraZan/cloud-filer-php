@@ -15,7 +15,7 @@ class AuthController extends Controller
         $userService = App::getService('userService');
         
         $userService->register($request->getData());
-
-        return new Response(["message" => "Registration successfull!"], 200);
+    
+        return new Response($request->getData(), 200);
     }
 }

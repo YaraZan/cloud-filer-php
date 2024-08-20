@@ -14,7 +14,7 @@ class Route
         $this->middleware = $middleware;
     }
 
-    public function navigate(Request $request)
+    public function navigate(Request $request): Response
     {
         $action = $this->method;
 
@@ -22,6 +22,6 @@ class Route
             $this->middleware->handle($request);
         }
 
-        $this->controller->$action($request);
+        return $this->controller->$action($request);
     }
 }

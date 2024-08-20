@@ -10,7 +10,7 @@ class Router
 
     public function __construct() {
         $this->registerRoutesarray([
-            "GET /login" => [AuthController::class, "view"],
+            "POST /register" => new Route(AuthController::class, "register"),
         ]);
     }
 
@@ -27,18 +27,13 @@ class Router
 
         if (!isset($this->routes[$routeKey])) {
             http_response_code(404);
+            
             echo "404 Not Found";
         }
 
-        [$controllerClass, $action, $middleware] = $this->routes[$routeKey];
+        $routeClass = $this->routes[$routeKey];
 
-        if (isset($middleware)) {
-            $middleware->handle($request);
-        }
-        
-        $controller = new $controllerClass();
-
-        $response = $controller->$action($request);
+        $response = $routeClass->navigate($request);
         
         if ($response instanceof Response) {
             $response->send();

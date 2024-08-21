@@ -18,21 +18,25 @@ class Session
         }
     }
 
-    public static function create(array $user): void
+    public static function create(array $user): string
     {
         self::start();
 
         $token = [
             "exp" => round(microtime(true) * 1000) + (self::$expiresInDays * 24 * 60 * 60 * 1000),
-            "iat" => round(microtime()),
+            "iat" => round(microtime(true)),
             "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
             "user" => $user,
         ];
 
-        $_SESSION["token"] = Tokenizer::encode($token);
+        $encodedToken = Tokenizer::encode($token);
+
+        $_SESSION["token"] = $encodedToken;
         $_SESSION["rlim_" . $user["id"]] = [];
 
         self::regenerate();
+
+        return $encodedToken;
     }
 
     public static function authorizedUser(): ?array

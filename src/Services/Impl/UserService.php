@@ -56,24 +56,23 @@ class UserService implements UserServiceMeta
             "email" => $credentials["email"],
             "password" => Validator::hashPassword($credentials["password"]),
         ]);
-
-        $this->login($credentials);
     }
 
-    public function login($credentials): void 
+    public function login($credentials): string 
     {
         $this->validateCredentials($credentials);
 
-        $user = $this->repository->findOneWhere("email = ", $credentials['email']);
-
-        if (!isset($user)) {
+        $user = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
+        if (empty($user)) {
             throw new Exception('User with provided email doesn`t exist', 400);
         }
         if (!Validator::verifyPasswords($credentials['password'], $user["password"])) {
             throw new Exception('Invalid password', 400);
         }
 
-        Session::create($user);
+        $token = Session::create($user);
+
+        return $token;
     }
 
     public function logout(): void

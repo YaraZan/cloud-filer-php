@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use App\Controllers\AuthController;
+use Exception;
 
 class Router
 {
@@ -25,18 +26,23 @@ class Router
         $route = $request->getRoute();
         $routeKey = $method . ' ' . $route;
 
-        if (!isset($this->routes[$routeKey])) {
-            http_response_code(404);
-            
-            echo "404 Not Found";
+        try {
+            $routeClass = $this->routes[$routeKey];
+            $response = $routeClass->navigate($request);
+
+            if (!isset($this->routes[$routeKey])) {
+                throw new Exception("Not found", 404);
+            }
+
+            if ($response instanceof Response) {
+                $response->send();
+            }
+        } catch (\Exception $e) {
+            $errorResponse = new Response(["error" => ["message" => $e->getMessage()]], $e->getCode());
+
+            $errorResponse->send();
         }
 
-        $routeClass = $this->routes[$routeKey];
 
-        $response = $routeClass->navigate($request);
-        
-        if ($response instanceof Response) {
-            $response->send();
-        }
     }
 }

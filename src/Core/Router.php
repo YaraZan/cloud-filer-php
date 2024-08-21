@@ -12,6 +12,7 @@ class Router
     public function __construct() {
         $this->registerRoutesarray([
             "POST /register" => new Route(AuthController::class, "register"),
+            "POST /login" => new Route(AuthController::class, "login"),
         ]);
     }
 

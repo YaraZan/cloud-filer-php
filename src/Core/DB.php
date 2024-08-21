@@ -35,21 +35,26 @@ class DB
         return self::$conn;
     }
 
-    protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): mixed
+    protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
     {
         try {
             $stmt = self::getConnection()->prepare($sql);
             $stmt->execute($params);
     
             if (!$fetchAll) {
-                return $stmt->fetchObject(PDO::FETCH_ASSOC);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                return $result ?: [];
             }
     
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $result ?: [];
         } catch (\PDOException $e) {
             throw new \RuntimeException("Database query error: " . $e->getMessage());
         }
     }
+    
 
     public function findAll(): array
     {

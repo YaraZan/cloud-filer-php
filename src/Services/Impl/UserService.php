@@ -2,18 +2,11 @@
 
 namespace App\Services\Impl;
 
-use App\Core\Response;
 use App\Core\Session;
-use App\Exceptions\EmailAlreadyExistsException;
-use App\Exceptions\EmailDoesntExistException;
-use App\Exceptions\InvalidEmailFormatException;
-use App\Exceptions\InvalidPasswordException;
-use App\Exceptions\InvalidPasswordFormatException;
-use App\Exceptions\NotAuthorizedException;
-use App\Exceptions\PasswordConfirmationException;
 use App\Repositories\UserRepository;
 use App\Services\Meta\UserServiceMeta;
 use App\Utils\Validator;
+use Exception;
 
 class UserService implements UserServiceMeta
 {
@@ -27,10 +20,11 @@ class UserService implements UserServiceMeta
     protected function validateCredentials($credentials): void
     {
         if (!Validator::validateEmail($credentials['email'])) {
-            throw new InvalidEmailFormatException();
+            throw new Exception('Invalid email format. Email should match pattern: example@mail.com', 400);
         }
         if (!Validator::validatePassword($credentials['password'])) {
-            throw new InvalidPasswordFormatException();
+            throw new Exception('Invalid password format. Password should be 12 digits 
+    lenght, including numbers and spec. symbols: /, #, $, %, *, _, -', 400);
         }
     }
 
@@ -49,12 +43,12 @@ class UserService implements UserServiceMeta
         $this->validateCredentials($credentials);
 
         if ($credentials['password'] !== $credentials['confirm_password']) {
-            throw new PasswordConfirmationException();
+            throw new Exception('Passwords doesn`t match', 400);
         }
 
-        $userExists = $this->repository->findOneWhere("email = ", $credentials['email']);
-        if (isset($userExists)) {
-            throw new EmailAlreadyExistsException();
+        $userExists = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
+        if ((!empty($userExists))) {
+            throw new Exception('User with provided email already exists', 400);
         }
 
         $this->repository->create([
@@ -73,10 +67,10 @@ class UserService implements UserServiceMeta
         $user = $this->repository->findOneWhere("email = ", $credentials['email']);
 
         if (!isset($user)) {
-            throw new EmailDoesntExistException();
+            throw new Exception('User with provided email doesn`t exist', 400);
         }
         if (!Validator::verifyPasswords($credentials['password'], $user["password"])) {
-            throw new InvalidPasswordException();
+            throw new Exception('Invalid password', 400);
         }
 
         Session::create($user);
@@ -91,15 +85,15 @@ class UserService implements UserServiceMeta
     {
         $authUser = Session::authorizedUser();
         if (!isset($authUser)) {
-            throw new NotAuthorizedException();
+            throw new Exception('Not authorized', 401);
         }
         
         $user = $this->repository->findOne($authUser["id"]);
         if (!Validator::verifyPasswords($old_password, $user["password"])) {
-            throw new InvalidPasswordException();
+            throw new Exception('Invalid password', 400);
         }
         if ($new_password !== $confirm_password) {
-            throw new PasswordConfirmationException();
+            throw new Exception('Passwords doesn`t match', 400);
         }
 
         $this->updateAuthorizedUser(["password" => $new_password]);
@@ -109,7 +103,7 @@ class UserService implements UserServiceMeta
     {
         $authUser = Session::authorizedUser();
         if (!isset($authUser)) {
-            throw new NotAuthorizedException();
+            throw new Exception('Not authorized', 401);
         }
 
         $this->repository->update((int) $authUser["id"], $data);

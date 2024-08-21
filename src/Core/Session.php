@@ -2,10 +2,7 @@
 
 namespace App\Core;
 
-use App\Exceptions\TokenInvalidException;
-use App\Repositories\UserRepository;
 use App\Utils\Tokenizer;
-use Exception;
 
 class Session
 {
@@ -41,7 +38,7 @@ class Session
 
     public static function authorizedUser(): ?array
     {
-        $token = self::get("token"); 
+        $token = self::get("token");
 
         return $token["user"] ?? null;
     }

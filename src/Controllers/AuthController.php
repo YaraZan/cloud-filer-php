@@ -18,4 +18,13 @@ class AuthController extends Controller
     
         return new Response(["message" => "Registration successfull!"], 200);
     }
+
+    public function login(Request $request): Response
+    {
+        $userService = App::getService('userService');
+
+        $token = $userService->login($request->getData());
+
+        return new Response(["message" => "Authorization successfull!", "token" => $token], 200);
+    }
 }

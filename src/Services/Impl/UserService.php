@@ -2,29 +2,29 @@
 
 namespace App\Services\Impl;
 
-use App\Core\Response;
 use App\Core\Session;
-use App\Exceptions\EmailAlreadyExistsException;
-use App\Exceptions\EmailDoesntExistException;
-use App\Exceptions\InvalidEmailFormatException;
-use App\Exceptions\InvalidPasswordFormatException;
-use App\Exceptions\PasswordConfirmationException;
 use App\Repositories\UserRepository;
 use App\Services\Meta\UserServiceMeta;
 use App\Utils\Validator;
+use Exception;
 
 class UserService implements UserServiceMeta
 {
 
     private UserRepository $repository;
 
+    public function __construct() {
+        $this->repository = new UserRepository();
+    }
+
     protected function validateCredentials($credentials): void
     {
         if (!Validator::validateEmail($credentials['email'])) {
-            throw new InvalidEmailFormatException();
+            throw new Exception('Invalid email format. Email should match pattern: example@mail.com', 400);
         }
         if (!Validator::validatePassword($credentials['password'])) {
-            throw new InvalidPasswordFormatException();
+            throw new Exception('Invalid password format. Password should be 12 digits 
+    lenght, including numbers and spec. symbols: /, #, $, %, *, _, -', 400);
         }
     }
 
@@ -40,15 +40,19 @@ class UserService implements UserServiceMeta
 
     public function register($credentials): void
     {
+        Validator::validate([
+            "email" => "required|max:50"
+        ], $credentials);
+
         $this->validateCredentials($credentials);
 
         if ($credentials['password'] !== $credentials['confirm_password']) {
-            throw new PasswordConfirmationException();
+            throw new Exception('Passwords doesn`t match', 400);
         }
 
-        $userExists = $this->repository->findOneWhere("email = ", $credentials['email']);
-        if (isset($userExists)) {
-            throw new EmailAlreadyExistsException();
+        $userExists = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
+        if ((!empty($userExists))) {
+            throw new Exception('User with provided email already exists', 400);
         }
 
         $this->repository->create([
@@ -56,20 +60,23 @@ class UserService implements UserServiceMeta
             "email" => $credentials["email"],
             "password" => Validator::hashPassword($credentials["password"]),
         ]);
-
-        $this->login($credentials);
     }
 
-    public function login($credentials): void 
+    public function login($credentials): string 
     {
         $this->validateCredentials($credentials);
-        
-        $user = $this->repository->findOneWhere("email = ", $credentials['email']);
-        if (!isset($user)) {
-            throw new EmailDoesntExistException();
+
+        $user = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
+        if (empty($user)) {
+            throw new Exception('User with provided email doesn`t exist', 400);
+        }
+        if (!Validator::verifyPasswords($credentials['password'], $user["password"])) {
+            throw new Exception('Invalid password', 400);
         }
 
-        Session::create($user);
+        $token = Session::create($user);
+
+        return $token;
     }
 
     public function logout(): void
@@ -77,19 +84,30 @@ class UserService implements UserServiceMeta
         Session::destroy();
     }
 
-    public function reset_password(string $old_password, string $new_password): void
+    public function resetPassword($data): void
     {
-        if ($old_password !== $new_password) {
-            throw new PasswordConfirmationException();
+        $authUser = Session::authorizedUser();
+        
+        $user = $this->repository->findOne($authUser["id"]);
+        if (!Validator::verifyPasswords($data["old_password"], $user["password"])) {
+            throw new Exception('Invalid password', 400);
+        }
+        if ($data["new_password"] !== $data["confirm_password"]) {
+            throw new Exception('Passwords doesn`t match', 400);
         }
 
-        $this->updateAuthorizedUser(["password" => $new_password]);
+        $newPassword = Validator::hashPassword($data["new_password"]);
+
+        $this->updateAuthorizedUser(["password" => $newPassword]);
     }
 
     public function updateAuthorizedUser($data): void
     {
-        $user = Session::authorizedUser();
+        $authUser = Session::authorizedUser();
+        if (!isset($authUser)) {
+            throw new Exception('Not authorized', 401);
+        }
 
-        $this->repository->update((int) $user["id"], $data);
+        $this->repository->update((int) $authUser["id"], $data);
     }
 }

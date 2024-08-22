@@ -3,6 +3,8 @@
 namespace App\Core;
 
 use App\Controllers\AuthController;
+use App\Middleware\AuthMiddleware;
+use Exception;
 
 class Router
 {
@@ -10,7 +12,9 @@ class Router
 
     public function __construct() {
         $this->registerRoutesarray([
-            "GET /login" => [AuthController::class, "view"],
+            "POST /register" => new Route(AuthController::class, "register"),
+            "POST /login" => new Route(AuthController::class, "login"),
+            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", AuthMiddleware::class),
         ]);
     }
 
@@ -25,23 +29,23 @@ class Router
         $route = $request->getRoute();
         $routeKey = $method . ' ' . $route;
 
-        if (!isset($this->routes[$routeKey])) {
-            http_response_code(404);
-            echo "404 Not Found";
+        try {
+            $routeClass = $this->routes[$routeKey];
+            $response = $routeClass->navigate($request);
+
+            if (!isset($this->routes[$routeKey])) {
+                throw new Exception("Not found", 404);
+            }
+
+            if ($response instanceof Response) {
+                $response->send();
+            }
+        } catch (\Exception $e) {
+            $errorResponse = new Response(["error" => ["message" => $e->getMessage()]], $e->getCode());
+
+            $errorResponse->send();
         }
 
-        [$controllerClass, $action, $middleware] = $this->routes[$routeKey];
 
-        if (isset($middleware)) {
-            $middleware->handle($request);
-        }
-        
-        $controller = new $controllerClass();
-
-        $response = $controller->$action($request);
-        
-        if ($response instanceof Response) {
-            $response->send();
-        }
     }
 }

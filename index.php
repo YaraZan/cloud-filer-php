@@ -14,7 +14,13 @@ $router = new Router();
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
-$data = $method === 'POST' ? $_POST : $_GET;
+
+if ($method === 'POST') {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+} else {
+    $data = $_GET;
+}
 
 $request = new Request($data, $uri, $method);
 

@@ -17,9 +17,9 @@ class Request
         $this->method = $method;
     }
 
-    public function getData(): string
+    public function getData(): array
     {
-        return json_decode($this->data);
+        return $this->data;
     }
 
     public function getRoute(): string

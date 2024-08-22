@@ -27,4 +27,13 @@ class AuthController extends Controller
 
         return new Response(["message" => "Authorization successfull!", "token" => $token], 200);
     }
+
+    public function resetPassword(Request $request): Response
+    {
+        $userService = App::getService('userService');
+
+        $userService->resetPassword($request->getData());
+
+        return new Response(["message" => "Password reset successfully!"], 200);
+    }
 }

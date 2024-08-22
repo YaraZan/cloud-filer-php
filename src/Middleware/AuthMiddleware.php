@@ -8,6 +8,7 @@ use App\Core\Session;
 use App\Exceptions\TokenExpiredException;
 use App\Exceptions\TokenInvalidException;
 use App\Utils\Tokenizer;
+use Exception;
 
 class AuthMiddleware extends Middleware
 {
@@ -19,17 +20,17 @@ class AuthMiddleware extends Middleware
         $receivedToken = $data["token"] ?? null;
 
         if (!isset($receivedToken)) {
-            throw new TokenInvalidException();
+            throw new Exception("Token invalid", 401);
         }
 
         if ($storedToken !== $receivedToken) {
-            throw new TokenInvalidException();
+            throw new Exception("Token invalid", 401);
         }
 
         $decodedToken = Tokenizer::decode($storedToken);
 
         if ($decodedToken->exp < time()) {
-            throw new TokenExpiredException();
+            throw new Exception("Token expired", 419);
         }
     }
 }

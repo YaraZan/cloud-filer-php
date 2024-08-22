@@ -11,7 +11,7 @@ class Route
     public function __construct($controller, string $method, $middleware = null) {
         $this->controller = new $controller();
         $this->method = $method;
-        $this->middleware = $middleware;
+        $this->middleware = new $middleware();
     }
 
     public function navigate(Request $request): Response

@@ -40,6 +40,10 @@ class UserService implements UserServiceMeta
 
     public function register($credentials): void
     {
+        Validator::validate([
+            "email" => "required|max:50"
+        ], $credentials);
+
         $this->validateCredentials($credentials);
 
         if ($credentials['password'] !== $credentials['confirm_password']) {
@@ -80,22 +84,21 @@ class UserService implements UserServiceMeta
         Session::destroy();
     }
 
-    public function resetPassword(string $old_password, string $new_password, string $confirm_password): void
+    public function resetPassword($data): void
     {
         $authUser = Session::authorizedUser();
-        if (!isset($authUser)) {
-            throw new Exception('Not authorized', 401);
-        }
         
         $user = $this->repository->findOne($authUser["id"]);
-        if (!Validator::verifyPasswords($old_password, $user["password"])) {
+        if (!Validator::verifyPasswords($data["old_password"], $user["password"])) {
             throw new Exception('Invalid password', 400);
         }
-        if ($new_password !== $confirm_password) {
+        if ($data["new_password"] !== $data["confirm_password"]) {
             throw new Exception('Passwords doesn`t match', 400);
         }
 
-        $this->updateAuthorizedUser(["password" => $new_password]);
+        $newPassword = Validator::hashPassword($data["new_password"]);
+
+        $this->updateAuthorizedUser(["password" => $newPassword]);
     }
 
     public function updateAuthorizedUser($data): void

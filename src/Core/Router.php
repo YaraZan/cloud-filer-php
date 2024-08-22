@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use App\Controllers\AuthController;
+use App\Middleware\AuthMiddleware;
 use Exception;
 
 class Router
@@ -13,6 +14,7 @@ class Router
         $this->registerRoutesarray([
             "POST /register" => new Route(AuthController::class, "register"),
             "POST /login" => new Route(AuthController::class, "login"),
+            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", AuthMiddleware::class),
         ]);
     }
 

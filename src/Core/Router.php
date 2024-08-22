@@ -6,10 +6,16 @@ use App\Controllers\AuthController;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
+/**
+ * Used for endpoint registration
+ * Processes incoming requests to actions
+ */
 class Router
 {
+    /** Defined routes */
     private array $routes = [];
 
+    /** Initialization of app endpoints as routes */
     public function __construct() {
         $this->registerRoutesarray([
             "POST /register" => new Route(AuthController::class, "register"),
@@ -18,12 +24,26 @@ class Router
         ]);
     }
 
-    public function registerRoutesarray($routes): void
+    /**
+     * Registrating routes
+     * 
+     * @param array $routes Routes
+     * @return void
+     */
+    public function registerRoutesarray(array $routes): void
     {
         $this->routes = $routes;
     }
 
-    public function processRequest(Request $request)
+    /**
+     * Process incoming request
+     * If request is successfull, returns some payload
+     * If not, returns error object.
+     * 
+     * @param Request $request Incoming request
+     * @return void
+     */
+    public function processRequest(Request $request): void
     {   
         $method = $request->getMethod();
         $route = $request->getRoute();
@@ -45,7 +65,5 @@ class Router
 
             $errorResponse->send();
         }
-
-
     }
 }

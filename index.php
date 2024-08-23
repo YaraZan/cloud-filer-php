@@ -14,6 +14,7 @@ $router = new Router();
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
+$headers = apache_request_headers();
 
 if ($method === 'POST') {
     $rawData = file_get_contents('php://input');
@@ -22,6 +23,6 @@ if ($method === 'POST') {
     $data = $_GET;
 }
 
-$request = new Request($data, $uri, $method);
+$request = new Request($data, $uri, $method, $headers);
 
 $router->processRequest($request);

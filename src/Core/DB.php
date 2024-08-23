@@ -2,22 +2,40 @@
 
 namespace App\Core;
 
+/** Require app config variables */
 require_once __DIR__ . "/../Config/config.php";
 
 use PDO, PDOException;
 use RuntimeException;
 
+/**
+ * Base class for entity repositories
+ * Used for connection to remote database.
+ */
 class DB
 {
+    /** Table name */
     protected string $tableName;
+
+    /** Name alias of primary key */
     protected string $primaryKey = "id";
+
+    /** Database connection */
     private static ?PDO $conn = null;
 
+    /**
+     * Returns repository table name
+     * @return string 
+     */
     public function table(): string
     {
         return $this->tableName;
     }
 
+    /**
+     * Used for connection to database
+     * @return PDO
+     */
     private static function getConnection(): PDO
     {
         if (self::$conn === null) {
@@ -35,6 +53,21 @@ class DB
         return self::$conn;
     }
 
+    /**
+     * Executes sql string and returns database response
+     * 
+     * @param string $sql 
+     * SQL query string
+
+     * @param array $params 
+     * An array of insert params
+     * 
+     * @param bool $fetchAll 
+     * Fetch all objects
+     * 
+     * @return array 
+     * Database response
+     */
     protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
     {
         try {
@@ -55,7 +88,10 @@ class DB
         }
     }
     
-
+    /**
+     * Fetch all records in repository
+     * @return array
+     */
     public function findAll(): array
     {
         $sql = "SELECT * FROM " . $this->tableName;
@@ -64,6 +100,14 @@ class DB
         return $res;
     }
 
+    /**
+     * Fetch one record in repository
+     * 
+     * @param int $id
+     * Id of searching record
+     * 
+     * @return array
+     */
     public function findOne(int $id): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
@@ -72,6 +116,14 @@ class DB
         return $res;
     }
 
+    /**
+     * Fetch all records in repository that match condition
+     * 
+     * @param string $query
+     * SQL query with condition
+     * 
+     * @return array
+     */
     public function findWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
@@ -80,6 +132,14 @@ class DB
         return $res;
     }
 
+    /**
+     * Fetch first record in repository that matches condition
+     * 
+     * @param string $query
+     * SQL query with condition
+     * 
+     * @return array
+     */
     public function findOneWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
@@ -88,6 +148,14 @@ class DB
         return $res;
     }
 
+    /**
+     * Create a new record in repository
+     * 
+     * @param array $data
+     * An associative array representing a new record
+     * 
+     * @return void
+     */
     public function create(array $data): void 
     {
         $sql = "INSERT INTO " . $this->tableName . " (";
@@ -106,6 +174,17 @@ class DB
         $this->executeQuery($sql, $params);
     }
 
+    /**
+     * Update a record in repository
+     * 
+     * @param int $id
+     * Id of updating record
+     * 
+     * @param array $data
+     * An associative array with updated records data
+     * 
+     * @return void
+     */
     public function update(int $id, array $data): void
     {
         $sql = "UPDATE " . $this->tableName . " SET ";
@@ -125,6 +204,14 @@ class DB
         $this->executeQuery($sql, $params);
     }
 
+    /**
+     * Delete a record in repository
+     * 
+     * @param int $id
+     * Id of deleting record
+     * 
+     * @return void
+     */
     public function delete(int $id): void
     {
         $sql = "DELETE FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";

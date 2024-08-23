@@ -4,10 +4,19 @@ namespace App\Core;
 
 use App\Utils\Tokenizer;
 
+/**
+ * Session management
+ */
 class Session
 {
+    /** Token expiration days range */
     private static int $expiresInDays = 7;
 
+    /**
+     * Start session
+     * 
+     * @return void
+     */
     public static function start(): void
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -15,6 +24,12 @@ class Session
         }
     }
 
+    /**
+     * Create session instance 
+     * 
+     * @param array $user Stored user
+     * @return string Session token
+     */
     public static function create(array $user): string
     {
         self::start();
@@ -36,6 +51,11 @@ class Session
         return $encodedToken;
     }
 
+    /**
+     * Get currently authorized user
+     * 
+     * @return array|null
+     */
     public static function authorizedUser(): ?array
     {
         $token = self::get("token");
@@ -43,18 +63,36 @@ class Session
         return $token["user"] ?? null;
     }
 
+    /**
+     * Get session key
+     * 
+     * @param string $key Key name
+     * @return mixed Key value
+     */
     public static function get(string $key): mixed
     {
         self::start();
         return $_SESSION[$key] ?? null;
     }
 
+    /**
+     * Set session key
+     * 
+     * @param string $key Name of key
+     * @param $value Key value
+     * @return void
+     */
     public static function set(string $key, $value): void
     {
         self::start();
         $_SESSION[$key] = $value;
     }
 
+    /**
+     * Destroy session
+     * 
+     * @return void
+     */
     public static function destroy(): void
     {
         self::start();
@@ -62,6 +100,11 @@ class Session
         session_destroy();
     }
 
+    /**
+     * Regenerate session
+     * 
+     * @return void
+     */
     private static function regenerate(): void
     {
         if (session_status() == PHP_SESSION_ACTIVE) {

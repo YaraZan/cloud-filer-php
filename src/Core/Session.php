@@ -2,7 +2,6 @@
 
 namespace App\Core;
 
-use App\Repositories\UserRepository;
 use App\Utils\Tokenizer;
 use Exception;
 
@@ -43,11 +42,16 @@ class Session
      * 
      * @return array|null
      */
-    public static function user(): ?array
+    public static function user(): array
     {
         $token = self::get("token");
+        if (!isset($token)) {
+            throw new Exception('Not authorized', 401);
+        }
 
-        return $token["user"] ?? null;
+        $decodedToken = Tokenizer::decode($token);
+
+        return $decodedToken["user"];
     }
 
     /**

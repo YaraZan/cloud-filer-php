@@ -4,8 +4,10 @@ namespace App\Services\Impl;
 
 require __DIR__ . "/../Config/config.php";
 
+use App\Core\DB;
 use App\Core\Session;
 use App\Repositories\UserRepository;
+use App\Repositories\UserRolesRepository;
 use App\Services\Meta\UserServiceMeta;
 use App\Utils\Tokenizer;
 use App\Utils\Validator;
@@ -15,9 +17,11 @@ class UserService implements UserServiceMeta
 {
 
     private UserRepository $repository;
+    private UserRolesRepository $userRolesRepository;
 
     public function __construct() {
         $this->repository = new UserRepository();
+        $this->userRolesRepository = new UserRolesRepository();
     }
 
     protected function validateCredentials($credentials): void
@@ -77,12 +81,16 @@ class UserService implements UserServiceMeta
             throw new Exception('Invalid password', 400);
         }
 
+        // Fetch user roles
+        $roles = $this->userRolesRepository->findWhere("user_id = ", $user["id"]);
+        $user["roles"] = $roles;
+
         // Create access token
         $accessToken = [
             "exp" => round(microtime(true) * 1000) + (ACCESS_TOKEN_EXP),
             "iat" => round(microtime(true)),
             "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
-            "uid" => $user["id"],
+            "user" => $user,
         ];
         $encodedAccessToken = Tokenizer::encode($accessToken);
 
@@ -109,7 +117,7 @@ class UserService implements UserServiceMeta
 
     public function resetPassword($data): void
     {
-        $authUser = Session::authorizedUser();
+        $authUser = Session::user();
         
         $user = $this->repository->findOne($authUser["id"]);
         if (!Validator::verifyPasswords($data["old_password"], $user["password"])) {
@@ -126,10 +134,7 @@ class UserService implements UserServiceMeta
 
     public function updateAuthorizedUser($data): void
     {
-        $authUser = Session::authorizedUser();
-        if (!isset($authUser)) {
-            throw new Exception('Not authorized', 401);
-        }
+        $authUser = Session::user();
 
         $this->repository->update((int) $authUser["id"], $data);
     }

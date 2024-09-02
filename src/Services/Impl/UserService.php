@@ -2,9 +2,12 @@
 
 namespace App\Services\Impl;
 
+require __DIR__ . "/../Config/config.php";
+
 use App\Core\Session;
 use App\Repositories\UserRepository;
 use App\Services\Meta\UserServiceMeta;
+use App\Utils\Tokenizer;
 use App\Utils\Validator;
 use Exception;
 
@@ -74,9 +77,29 @@ class UserService implements UserServiceMeta
             throw new Exception('Invalid password', 400);
         }
 
-        $token = Session::create($user);
+        // Create access token
+        $accessToken = [
+            "exp" => round(microtime(true) * 1000) + (ACCESS_TOKEN_EXP),
+            "iat" => round(microtime(true)),
+            "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
+            "uid" => $user["id"],
+        ];
+        $encodedAccessToken = Tokenizer::encode($accessToken);
 
-        return $token;
+        // Create refresh token
+        $refreshToken = [
+            "exp" => round(microtime(true) * 1000) + (REFRESH_TOKEN_EXP),
+            "iat" => round(microtime(true)),
+            "uid" => $user["id"],
+        ];
+        $encodedRefreshToken = Tokenizer::encode($refreshToken);
+
+        $user = $this->repository->findOne($user["id"]);
+        $this->repository->update($user["id"], ["refresh_token" => $encodedRefreshToken]);
+
+        Session::create($encodedAccessToken);
+
+        return $encodedAccessToken;
     }
 
     public function logout(): void

@@ -47,10 +47,7 @@ class Session
     {
         $token = self::get("token");
 
-        $userRepository = new UserRepository();
-        $user = $userRepository->findOne($token["uid"]);
-
-        return $user ?? null;
+        return $token["user"] ?? null;
     }
 
     /**

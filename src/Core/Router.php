@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-use App\Controllers\AuthController;
+use App\Controllers\UserController;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
@@ -18,9 +18,9 @@ class Router
     /** Initialization of app endpoints as routes */
     public function __construct() {
         $this->registerRoutesarray([
-            "POST /register" => new Route(AuthController::class, "register"),
-            "POST /login" => new Route(AuthController::class, "login"),
-            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", AuthMiddleware::class),
+            "POST /register" => new Route(UserController::class, "register"),
+            "POST /login" => new Route(UserController::class, "login"),
+            "POST /resetPassword" => new Route(UserController::class, "resetPassword", AuthMiddleware::class),
         ]);
     }
 
@@ -65,5 +65,18 @@ class Router
 
             $errorResponse->send();
         }
+    }
+
+    /**
+     * Redirect to a specified URL
+     *
+     * @param string $url The URL to redirect to
+     * @param int $statusCode HTTP status code for the redirect (default is 302)
+     * @return void
+     */
+    public static function redirect(string $url, int $statusCode = 302): void
+    {
+        header("Location: " . BASE_URI . $url, true, $statusCode);
+        exit(); // Make sure to stop script execution after redirect
     }
 }

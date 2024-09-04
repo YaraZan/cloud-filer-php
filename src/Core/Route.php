@@ -20,7 +20,10 @@ class Route
     public function __construct($controller, string $method, $middleware = null) {
         $this->controller = new $controller();
         $this->method = $method;
-        $this->middleware = new $middleware();
+
+        if (isset($middleware)) {
+            $this->middleware = new $middleware();
+        }
     }
 
     /** 

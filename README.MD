@@ -1,61 +1,61 @@
+# CloudFiler - Cloud File Storage Service
+
+**CloudFiler** is a cloud-based file storage service that allows users to store and share files with others. The project is built with vanilla PHP and uses JSON Web Token (JWT) for authentication, leveraging access and refresh tokens for session management.
+
 ![Logo](public/images/logo.png)
 
-### CloudFiler - Облачный сервис для хранения файлов
-
-**CloudFiler** — это облачный сервис для хранения файлов с возможностью их шейринга между пользователями. Проект написан на ванильном PHP и использует JSON Web Token (JWT) для авторизации и работы с сессиями через access и refresh токены.
-
-#### Возможности CloudFiler:
-- Хранение файлов в облаке
-- Совместное использование файлов с другими пользователями
-- Авторизация с использованием JWT (access и refresh токены)
-- Безопасность данных благодаря использованию современных методов авторизации
+### CloudFiler Features:
+- Cloud storage for user files
+- File sharing with other users
+- JWT-based authentication with access and refresh tokens
+- Data security with modern authentication methods
 
 ---
 
-### Запуск локально
+### Running Locally
 
-Для запуска CloudFiler локально необходимо следовать следующим шагам:
+To run **CloudFiler** locally, follow these steps:
 
-#### Требования:
+#### Requirements:
 - PHP >= 7.4
 - Composer
-- Сервер XAMPP или другой локальный сервер с поддержкой PHP
+- XAMPP or another PHP-supported local server
 
-#### Шаги установки:
+#### Installation Steps:
 
-1. **Склонировать репозиторий:**
+1. **Clone the repository:**
 
     ```bash
     git clone https://github.com/your-repository/cloud-filer.git
     ```
 
-2. **Для XAMPP (Windows/MacOS/Linux)**:
-   - Переместите репозиторий в папку `htdocs` XAMPP. Обычно расположение папки:
+2. **For XAMPP (Windows/MacOS/Linux)**:
+   - Move the cloned repository into XAMPP’s `htdocs` directory. Typically found at:
      - Windows: `C:/xampp/htdocs/`
      - MacOS: `/Applications/XAMPP/htdocs/`
      - Linux: `/opt/lampp/htdocs/`
    
-   **Для других систем (например, LAMP/WAMP):**
-   - Поместите проект в корневую папку веб-сервера. Для LAMP это `/var/www/html/`, для WAMP это `C:/wamp/www/`.
+   **For other systems (e.g., LAMP/WAMP):**
+   - Place the project in the root folder of your web server. For LAMP, it’s `/var/www/html/`, and for WAMP, it's `C:/wamp/www/`.
 
-3. **Установка зависимостей через Composer:**
+3. **Install dependencies via Composer:**
 
-    Перейдите в директорию с проектом и выполните команду:
-    
+    Navigate to the project directory and run:
+
     ```bash
     composer install
     ```
 
-4. **Настройка окружения:**
-   - Создайте файл `.env` в корне проекта и укажите необходимые переменные окружения (например, базу данных и секретный ключ для JWT).
+4. **Set up environment variables:**
+   - Create a `.env` file in the project root and define the necessary environment variables (e.g., database connection, JWT secret key).
 
-5. **Запуск локального сервера:**
+5. **Start the local server:**
 
-   Запустите ваш локальный сервер через XAMPP (или другой установленный сервер) и откройте браузер.
+   Start your local server using XAMPP (or any other installed server) and open the browser.
 
-6. **Откройте CloudFiler в браузере:**
+6. **Access CloudFiler:**
 
-    Перейдите по адресу:
+    Visit the following URL in your browser:
 
     ```bash
     http://localhost/cloud-filer/
@@ -63,28 +63,28 @@
 
 ---
 
-### Стек технологий
+### Technology Stack
 
 - **Backend**: PHP (vanilla)
 - **Authorization**: JWT (JSON Web Token)
-- **Database**: MySQL (или другая поддерживаемая база данных)
+- **Database**: MySQL (or other supported databases)
 - **Package Manager**: Composer
 
 ---
 
-### Важные моменты:
+### Key Features:
 
-1. **JWT Авторизация**:
-   - Для доступа к ресурсам используется `access token` с ограниченным сроком действия.
-   - После истечения срока действия `access token` автоматически обновляется с использованием `refresh token`.
+1. **JWT Authentication**:
+   - `Access token` is used to access resources with a limited lifespan.
+   - After expiration, the `access token` can be refreshed using a `refresh token`.
 
-2. **Безопасность**:
-   - Все пользовательские данные защищены, а авторизация и аутентификация реализованы через современные методы.
+2. **Security**:
+   - All user data is protected, with authentication and authorization implemented using modern methods.
 
-3. **Репозитории**:
-    - В проекте **CloudFiler** для работы с базой данных используются **репозитории**, которые представляют собой объекты для управления данными в конкретных таблицах. 
-    - Каждый репозиторий олицетворяет собой соответствующую таблицу базы данных и может переопределять методы родительского класса `DB`, обеспечивая гибкость и кастомизацию под бизнес-логику приложения. 
+3. **Repositories**:
+   - **CloudFiler** uses **repositories** to manage database interactions. Repositories act as data managers for specific database tables.
+   - Each repository represents a corresponding database table and can override parent class `DB` methods, providing flexibility and customization for business logic.
 
---- 
+---
 
-Спасибо за использование **CloudFiler**! 😄
+Thank you for using **CloudFiler**! 😄

@@ -47,6 +47,13 @@ class Request
     }
 
     /**
+     * Get request cookies
+     */
+    public function getCookies(): array {
+        return $_COOKIE;
+    }
+
+    /**
      * Get request route
      * @return array
      */

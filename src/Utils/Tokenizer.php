@@ -14,10 +14,11 @@ class Tokenizer
         return JWT::encode($payload, JWT_SECRET, 'HS256');
     }
 
-    public static function decode(string $jwt): mixed
+    public static function decode(string $jwt): array
     {
-        return JWT::decode($jwt, new Key(JWT_SECRET, 'HS256'));
-    }
+        $decoded = JWT::decode($jwt, new Key(JWT_SECRET, 'HS256'));
+        return json_decode(json_encode($decoded), true); 
+    }    
 
     public static function createAccessToken(array $user): string
     {

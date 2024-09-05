@@ -19,11 +19,15 @@ class Request
     /** Incoming request method */
     private string $method = "GET";
 
-    public function __construct($data, string $url, string $method = "GET")
+    /** Request headers */
+    private array $headers = [];
+
+    public function __construct($data, string $url, string $method = "GET", $headers = [])
     {
         $this->data = $data;
         $this->url = $url;
         $this->method = $method;
+        $this->headers = $headers;
     }
 
     /**
@@ -33,6 +37,20 @@ class Request
     public function getData(): array
     {
         return $this->data;
+    }
+
+    /**
+     * Get request headers
+     */
+    public function getHeaders(): array {
+        return $this->headers;
+    }
+
+    /**
+     * Get request cookies
+     */
+    public function getCookies(): array {
+        return $_COOKIE;
     }
 
     /**

@@ -3,15 +3,13 @@
 namespace App\Core;
 
 use App\Utils\Tokenizer;
+use Exception;
 
 /**
  * Session management
  */
 class Session
 {
-    /** Token expiration days range */
-    private static int $expiresInDays = 7;
-
     /**
      * Start session
      * 
@@ -27,28 +25,16 @@ class Session
     /**
      * Create session instance 
      * 
-     * @param array $user Stored user
-     * @return string Session token
+     * @param string $token Access token
+     * @return void
      */
-    public static function create(array $user): string
+    public static function create(string $token): void
     {
         self::start();
 
-        $token = [
-            "exp" => round(microtime(true) * 1000) + (self::$expiresInDays * 24 * 60 * 60 * 1000),
-            "iat" => round(microtime(true)),
-            "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
-            "user" => $user,
-        ];
-
-        $encodedToken = Tokenizer::encode($token);
-
-        $_SESSION["token"] = $encodedToken;
-        $_SESSION["rlim_" . $user["id"]] = [];
+        $_SESSION["token"] = $token;
 
         self::regenerate();
-
-        return $encodedToken;
     }
 
     /**
@@ -56,11 +42,16 @@ class Session
      * 
      * @return array|null
      */
-    public static function authorizedUser(): ?array
+    public static function user(): array
     {
         $token = self::get("token");
+        if (!isset($token)) {
+            throw new Exception('Not authorized', 401);
+        }
 
-        return $token["user"] ?? null;
+        $decodedToken = Tokenizer::decode($token);
+
+        return $decodedToken["user"];
     }
 
     /**

@@ -68,7 +68,7 @@ class DB
      * @return array 
      * Database response
      */
-    protected function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
+    protected static function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
     {
         try {
             $stmt = self::getConnection()->prepare($sql);
@@ -87,6 +87,17 @@ class DB
             throw new \RuntimeException("Database query error: " . $e->getMessage());
         }
     }
+
+    /**
+     * Execute raw SQL query
+     * 
+     * @param string $sql Raw SQL query
+     * @return array
+     */
+    public static function raw(string $sql): array
+    {
+        return self::executeQuery($sql);
+    }
     
     /**
      * Fetch all records in repository
@@ -95,7 +106,7 @@ class DB
     public function findAll(): array
     {
         $sql = "SELECT * FROM " . $this->tableName;
-        $res = $this->executeQuery($sql);
+        $res = self::executeQuery($sql);
 
         return $res;
     }
@@ -111,7 +122,7 @@ class DB
     public function findOne(int $id): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
-        $res = $this->executeQuery($sql, [$id], false);
+        $res = self::executeQuery($sql, [$id], false);
 
         return $res;
     }
@@ -127,7 +138,7 @@ class DB
     public function findWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql);
+        $res = self::executeQuery($sql);
 
         return $res;
     }
@@ -143,7 +154,7 @@ class DB
     public function findOneWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
-        $res = $this->executeQuery($sql, [], false);
+        $res = self::executeQuery($sql, [], false);
 
         return $res;
     }
@@ -171,7 +182,7 @@ class DB
 
         $sql .= implode(", ", $columns) . ") VALUES (" . implode(", ", $placeholders) . ")";
 
-        $this->executeQuery($sql, $params);
+        self::executeQuery($sql, $params);
     }
 
     /**
@@ -201,7 +212,7 @@ class DB
         $sql .= " WHERE " . $this->primaryKey . " = ?";
         $params[] = $id;
 
-        $this->executeQuery($sql, $params);
+        self::executeQuery($sql, $params);
     }
 
     /**
@@ -216,6 +227,6 @@ class DB
     {
         $sql = "DELETE FROM " . $this->tableName . " WHERE " . $this->primaryKey . " = ?";
 
-        $this->executeQuery($sql, [$id]);
+        self::executeQuery($sql, [$id]);
     }
 }

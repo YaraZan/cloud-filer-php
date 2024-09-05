@@ -2,6 +2,8 @@
 
 namespace App\Services\Meta;
 
+use App\Core\Request;
+
 interface UserServiceMeta
 {
     public function getAllUsers(): array;
@@ -11,4 +13,6 @@ interface UserServiceMeta
     public function register($credentials): void;
     public function logout(): void;
     public function resetPassword($data): void;
+    public function resetToken(): string;
+    public function authorize($token): void;
 }

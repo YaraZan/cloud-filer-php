@@ -5,32 +5,30 @@ namespace App\Middleware;
 use App\Core\Middleware;
 use App\Core\Request;
 use App\Core\Session;
-use App\Exceptions\TokenExpiredException;
-use App\Exceptions\TokenInvalidException;
+use App\Services\Impl\UserService;
 use App\Utils\Tokenizer;
 use Exception;
 
 class AuthMiddleware extends Middleware
 {
+    private UserService $userService;
+
+    public function __construct() {
+        $this->userService = new UserService();
+    }
+
     public function handle(Request $request): void
     {
-        $data = $request->getData();
+        // Get request headers
+        $cookies = $request->getCookies();
 
-        $storedToken = Session::get("token");
-        $receivedToken = $data["token"] ?? null;
-
-        if (!isset($receivedToken)) {
-            throw new Exception("Token invalid", 401);
+        // Check if there is no authorization schema
+        if (!isset($cookies['token'])) {
+            throw new Exception("No token provided!", 401);
         }
 
-        if ($storedToken !== $receivedToken) {
-            throw new Exception("Token invalid", 401);
-        }
+        $token = $cookies['token'];
 
-        $decodedToken = Tokenizer::decode($storedToken);
-
-        if ($decodedToken->exp < time()) {
-            throw new Exception("Token expired", 419);
-        }
+        $this->userService->authorize($token);
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Services\Impl;
 
-require __DIR__ . "/../Config/config.php";
+require_once __DIR__ . "/../../Config/config.php";
 
 use App\Core\DB;
+use App\Core\Request;
+use App\Core\Router;
 use App\Core\Session;
 use App\Repositories\UserRepository;
 use App\Repositories\UserRolesRepository;
@@ -19,7 +21,8 @@ class UserService implements UserServiceMeta
     private UserRepository $repository;
     private UserRolesRepository $userRolesRepository;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->repository = new UserRepository();
         $this->userRolesRepository = new UserRolesRepository();
     }
@@ -69,8 +72,9 @@ class UserService implements UserServiceMeta
         ]);
     }
 
-    public function login($credentials): string 
+    public function login($credentials): string
     {
+        // Validate user credentials
         $this->validateCredentials($credentials);
 
         $user = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
@@ -82,29 +86,20 @@ class UserService implements UserServiceMeta
         }
 
         // Fetch user roles
-        $roles = $this->userRolesRepository->findWhere("user_id = ", $user["id"]);
+        $roles = $this->userRolesRepository->findWhere("user_id = " . $user["id"]);
         $user["roles"] = $roles;
 
         // Create access token
-        $accessToken = [
-            "exp" => round(microtime(true) * 1000) + (ACCESS_TOKEN_EXP),
-            "iat" => round(microtime(true)),
-            "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
-            "user" => $user,
-        ];
-        $encodedAccessToken = Tokenizer::encode($accessToken);
+        $encodedAccessToken = Tokenizer::createAccessToken($user);
 
         // Create refresh token
-        $refreshToken = [
-            "exp" => round(microtime(true) * 1000) + (REFRESH_TOKEN_EXP),
-            "iat" => round(microtime(true)),
-            "uid" => $user["id"],
-        ];
-        $encodedRefreshToken = Tokenizer::encode($refreshToken);
+        $encodedRefreshToken = Tokenizer::createRefreshToken($user);
 
+        // Save new refresh token
         $user = $this->repository->findOne($user["id"]);
         $this->repository->update($user["id"], ["refresh_token" => $encodedRefreshToken]);
 
+        // Start new session with created access token
         Session::create($encodedAccessToken);
 
         return $encodedAccessToken;
@@ -118,7 +113,7 @@ class UserService implements UserServiceMeta
     public function resetPassword($data): void
     {
         $authUser = Session::user();
-        
+
         $user = $this->repository->findOne($authUser["id"]);
         if (!Validator::verifyPasswords($data["old_password"], $user["password"])) {
             throw new Exception('Invalid password', 400);
@@ -137,5 +132,44 @@ class UserService implements UserServiceMeta
         $authUser = Session::user();
 
         $this->repository->update((int) $authUser["id"], $data);
+    }
+
+    public function resetToken(): string
+    {
+        $authUser = Session::user();
+
+        $user = $this->repository->findOne($authUser["id"]);
+
+        $refreshToken = Tokenizer::decode($user["refresh_token"]);
+
+        // If refresh token is expired, logout user
+        if ($refreshToken["exp"] <= round(microtime(true))) {
+            Router::redirect('/logout');
+        } else {
+            $accessToken = Tokenizer::createAccessToken($authUser);
+
+            return $accessToken;
+        }
+    }
+
+    public function authorize($clientToken): void 
+    {   
+        $storedToken = Session::get("token");
+
+        // Check if session token exists
+        if (!isset($storedToken)) {
+            throw new Exception("Token doesn't exist!", 401);
+        }
+        // Check if sent token equal to stored token 
+        if ($storedToken !== $clientToken) {
+            throw new Exception("Token invalid", 401);
+        }
+
+        $accessToken = Tokenizer::decode($clientToken);
+        
+        // Check if access token is expired
+        if ($accessToken["exp"] <= round(microtime(true))) {
+            $this->resetToken();
+        }
     }
 }

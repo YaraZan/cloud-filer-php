@@ -37,7 +37,9 @@ class Route
         $action = $this->method;
 
         if (isset($this->middleware)) {
-            $this->middleware->handle($request);
+            foreach ($this->middleware as $middleware) {
+                $middleware->handle();
+            }
         }
 
         return $this->controller->$action($request);

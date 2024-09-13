@@ -32,6 +32,6 @@ class AdminService implements AdminServiceMeta
 
     public function updateUser(int $id, $data): void
     {
-        $this->userRepository->update($id, $data);   
+        $this->userRepository->update($id, $data["update"]);   
     }
 }

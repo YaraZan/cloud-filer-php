@@ -1,6 +1,7 @@
 {
     "name": "potemkinyaa/cloud-filer",
     "description": "A vanilla PHP cloud service for file storage, sharing",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "App\\": "src/"

@@ -15,15 +15,12 @@ class Route
     private string $method;
 
     /** Route middleware */
-    private $middleware;
+    private array $middlewares;
 
-    public function __construct($controller, string $method, $middleware = null) {
+    public function __construct($controller, string $method, ?array $middlewares = []) {
         $this->controller = new $controller();
         $this->method = $method;
-
-        if (isset($middleware)) {
-            $this->middleware = new $middleware();
-        }
+        $this->middlewares = $middlewares;
     }
 
     /** 
@@ -37,8 +34,12 @@ class Route
         $action = $this->method;
 
         if (isset($this->middleware)) {
-            foreach ($this->middleware as $middleware) {
-                $middleware->handle();
+            foreach ($this->middlewares as $middleware) {
+                if ($middleware instanceof Middleware) {
+                    $middlewareInstance = new $middleware();
+
+                    $middlewareInstance->handle($request);
+                }
             }
         }
 

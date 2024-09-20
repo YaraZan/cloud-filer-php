@@ -4,10 +4,11 @@ namespace App\Services\Impl;
 
 require_once __DIR__ . "/../../Config/config.php";
 
-use App\Core\DB;
-use App\Core\Request;
 use App\Core\Router;
 use App\Core\Session;
+use App\Exceptions\EmailException;
+use App\Exceptions\PasswordException;
+use App\Exceptions\TokenException;
 use App\Repositories\UserRepository;
 use App\Repositories\UserRolesRepository;
 use App\Services\Meta\UserServiceMeta;
@@ -30,11 +31,10 @@ class UserService implements UserServiceMeta
     protected function validateCredentials($credentials): void
     {
         if (!Validator::validateEmail($credentials['email'])) {
-            throw new Exception('Invalid email format. Email should match pattern: example@mail.com', 400);
+            throw EmailException::invalidFormat();
         }
         if (!Validator::validatePassword($credentials['password'])) {
-            throw new Exception('Invalid password format. Password should be 12 digits 
-    lenght, including numbers and spec. symbols: /, #, $, %, *, _, -', 400);
+            throw PasswordException::invalidFormat();
         }
     }
 
@@ -57,12 +57,12 @@ class UserService implements UserServiceMeta
         $this->validateCredentials($credentials);
 
         if ($credentials['password'] !== $credentials['confirm_password']) {
-            throw new Exception('Passwords doesn`t match', 400);
+            throw PasswordException::doesntMatch();
         }
 
         $userExists = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
         if ((!empty($userExists))) {
-            throw new Exception('User with provided email already exists', 400);
+            throw EmailException::alreadyExists();
         }
 
         $this->repository->create([
@@ -74,32 +74,26 @@ class UserService implements UserServiceMeta
 
     public function login($credentials): string
     {
-        // Validate user credentials
         $this->validateCredentials($credentials);
 
         $user = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
         if (empty($user)) {
-            throw new Exception('User with provided email doesn`t exist', 400);
+            throw EmailException::doesntExists();
         }
         if (!Validator::verifyPasswords($credentials['password'], $user["password"])) {
-            throw new Exception('Invalid password', 400);
+            throw PasswordException::incorrect();
         }
 
-        // Fetch user roles
         $roles = $this->userRolesRepository->findWhere("user_id = " . $user["id"]);
         $user["roles"] = $roles;
 
-        // Create access token
         $encodedAccessToken = Tokenizer::createAccessToken($user);
 
-        // Create refresh token
         $encodedRefreshToken = Tokenizer::createRefreshToken($user);
 
-        // Save new refresh token
         $user = $this->repository->findOne($user["id"]);
         $this->repository->update($user["id"], ["refresh_token" => $encodedRefreshToken]);
 
-        // Start new session with created access token
         Session::create($encodedAccessToken);
 
         return $encodedAccessToken;
@@ -116,10 +110,10 @@ class UserService implements UserServiceMeta
 
         $user = $this->repository->findOne($authUser["id"]);
         if (!Validator::verifyPasswords($data["old_password"], $user["password"])) {
-            throw new Exception('Invalid password', 400);
+            throw PasswordException::incorrect();
         }
         if ($data["new_password"] !== $data["confirm_password"]) {
-            throw new Exception('Passwords doesn`t match', 400);
+            throw PasswordException::doesntMatch();
         }
 
         $newPassword = Validator::hashPassword($data["new_password"]);
@@ -158,11 +152,11 @@ class UserService implements UserServiceMeta
 
         // Check if session token exists
         if (!isset($storedToken)) {
-            throw new Exception("Token doesn't exist!", 401);
+            throw TokenException::doesntExist();
         }
         // Check if sent token equal to stored token 
         if ($storedToken !== $clientToken) {
-            throw new Exception("Token invalid", 401);
+            throw TokenException::invalid();
         }
 
         $accessToken = Tokenizer::decode($clientToken);

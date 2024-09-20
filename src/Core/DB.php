@@ -12,7 +12,7 @@ use RuntimeException;
  * Base class for entity repositories
  * Used for connection to remote database.
  */
-class DB
+abstract class DB
 {
     /** Table name */
     protected string $tableName;
@@ -86,6 +86,53 @@ class DB
         } catch (\PDOException $e) {
             throw new \RuntimeException("Database query error: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Begin a database transaction.
+     * @return void
+     */
+    public static function beginTransaction(): void
+    {
+        self::getConnection()->beginTransaction();
+    }
+
+    /**
+     * Commit the current transaction.
+     * @return void
+     */
+    public static function commitTransaction(): void
+    {
+        self::getConnection()->commit();
+    }
+
+    /**
+     * Roll back the current transaction.
+     * @return void
+     */
+    public static function rollbackTransaction(): void
+    {
+        self::getConnection()->rollBack();
+    }
+
+    /**
+     * Roll back the current transaction.
+     * @return int Returned id
+     */
+    public static function getLastInsertedId(): int
+    {
+        return self::getConnection()->lastInsertId();
+    }
+
+    /**
+     * Clear all rows from the current repository's table.
+     * @return void
+     */
+    public function clearTable(): void
+    {
+        $sql = "DELETE FROM " . $this->tableName;
+        
+        self::executeQuery($sql);
     }
 
     /**

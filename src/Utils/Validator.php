@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use Exception;
+use App\Exceptions\ValidatorPropertyException;
 
 class Validator
 {
@@ -15,20 +15,17 @@ class Validator
      */
     public static function validate(array $rules, array $payload): void
     {
-        // Iterate through payload
         foreach ($rules as $key => $rule) {
             $conditionsArr = explode("|", $rule);
 
             // Check if property required
             if (in_array("required", $conditionsArr)) {
                 if (!key_exists($key, $payload)) {
-                    throw new Exception("The " . $key . " property is required!", 400);
+                    throw ValidatorPropertyException::isRequired($key);
                 }
             }
 
-            // Checks for other non-required properties
             if (key_exists($key, $payload)) {
-                // Check if property has limitations on max length 
                 $maxMatchesArr = array_filter($conditionsArr, function ($match) {
                     return preg_match('/^max:\d+$/', $match);
                 });
@@ -37,11 +34,10 @@ class Validator
                     $limit = end($maxConditionArr);
 
                     if (strlen($payload[$key]) > $limit) {
-                        throw new Exception("The " . $key . " property's length is over it's maximum limit!", 400);
+                        throw ValidatorPropertyException::lenghtOverLimit($key);
                     }
                 }
                 
-                // Check if property has limitations on min length 
                 $minMatchesArr = array_filter($conditionsArr, function ($match) {
                     return preg_match('/^min:\d+$/', $match);
                 });
@@ -50,7 +46,7 @@ class Validator
                     $limit = end($minConditionArr);
 
                     if (strlen($payload[$key]) < $limit) {
-                        throw new Exception("The " . $key . " property's length is under it's minimum lilit!", 400);
+                        throw ValidatorPropertyException::lenghtUnderLimit($key);
                     }
                 }
             }

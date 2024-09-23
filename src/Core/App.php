@@ -19,6 +19,7 @@ class App
     public static function registerServices(): void
     {
         self::$services['userService'] = new \App\Services\Impl\UserService();
+        self::$services['authService'] = new \App\Services\Impl\AuthService();
     }
 
     /**

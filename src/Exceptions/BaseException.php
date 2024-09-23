@@ -15,10 +15,16 @@ class BaseException extends Exception {
         return new self($message, 404);
     }
 
-    // 403 Forbidden error (Unauthorized Access)
-    protected static function errorUnauthorized(string $message): self
+    // 403 authentication error (Unauthenticated Access)
+    protected static function errorUnauthenticated(): self
     {
-        return new self($message, 403);
+        return new self("Not authenticated", 401);
+    }
+
+    // 403 Forbidden error (Unauthorized Access)
+    protected static function errorUnauthorized(): self
+    {
+        return new self("Not authorized", 403);
     }
 
     // 409 Conflict error (Duplicate entry or conflict)
@@ -28,9 +34,10 @@ class BaseException extends Exception {
     }
 
     // 500 Internal Server error (Generic server failure)
-    protected static function errorInternal(string $message): self
+    protected static function errorInternal(): self
     {
-        return new self($message, 500);
+        return new self("Server currently unavailable or cannot
+        process this action. Please try it later.", 500);
     }
 
     // 400 Bad Request error (Bad data or invalid arguments)

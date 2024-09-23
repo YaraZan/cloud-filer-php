@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-use App\Controllers\UserController;
+use App\Controllers\AuthController;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
@@ -18,15 +18,15 @@ class Router
     /** Initialization of app endpoints as routes */
     public function __construct() {
         $this->registerRoutesarray([
-            "POST /register" => new Route(UserController::class, "register"),
-            "POST /login" => new Route(UserController::class, "login"),
-            "POST /resetPassword" => new Route(UserController::class, "resetPassword", AuthMiddleware::class),
+            "POST /register" => new Route(AuthController::class, "register"),
+            "POST /login" => new Route(AuthController::class, "login"),
+            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", AuthMiddleware::class),
         ]);
     }
 
     /**
      * Registrating routes
-     * 
+     *
      * @param array $routes Routes
      * @return void
      */
@@ -39,12 +39,12 @@ class Router
      * Process incoming request
      * If request is successfull, returns some payload
      * If not, returns error object.
-     * 
+     *
      * @param Request $request Incoming request
      * @return void
      */
     public function processRequest(Request $request): void
-    {   
+    {
         $method = $request->getMethod();
         $route = $request->getRoute();
         $routeKey = $method . ' ' . $route;

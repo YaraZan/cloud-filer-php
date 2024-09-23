@@ -11,21 +11,21 @@ abstract class UserException extends BaseException {};
  * Email exceptions.
  */
 class EmailException extends UserException {
-    public static function invalidFormat(): self 
+    public static function invalidFormat(): self
     {
         return self::errorBadArguments("Invalid email format. Email should match pattern: example@mail.com",);
     }
 
-    public static function alreadyExists(): self 
+    public static function alreadyExists(): self
     {
         return self::errorBadArguments("User with provided email already exists",);
     }
 
-    public static function doesntExists(): self 
+    public static function doesntExists(): self
     {
         return self::errorBadArguments("User with provided email doesn`t exist",);
     }
-}; 
+};
 
 /**
  * Password exceptions.
@@ -33,7 +33,7 @@ class EmailException extends UserException {
 class PasswordException extends UserException {
     public static function invalidFormat(): self
     {
-        return self::errorBadArguments("Invalid password format. Password should be 12 digits 
+        return self::errorBadArguments("Invalid password format. Password should be 12 digits
     lenght, including numbers and spec. symbols: /, #, $, %, *, _, -");
     }
 
@@ -45,21 +45,5 @@ class PasswordException extends UserException {
     public static function doesntMatch(): self
     {
         return self::errorBadArguments("Passwords doesnt match");
-    }
-}
-
-/**
- * Token exceptionxs.
- */
-class TokenException extends UserException
-{
-    public static function doesntExist(): self
-    {
-        return self::errorUnauthorized("Token doesn't exist!");
-    }
-
-    public static function invalid(): self
-    {
-        return self::errorUnauthorized("Token invalid");
     }
 }

@@ -183,4 +183,22 @@ class AuthTest extends TestCase
 
     $this->authService->login($validUser);
   }
+
+  public function testUserCanLoginWithCorrectData(): void
+  {
+    $validUser = [
+        "name" => "John Doe",
+        "email" => "johndoe@example.com",
+        "password" => "ValidPass123#%",
+        "confirm_password" => "ValidPass123#%"
+    ];
+
+    $this->authService->register($validUser);
+
+    $this->authService->login($validUser);
+
+    $user = $this->userRepository->findOneWhere(sprintf("email = '%s'", $validUser["email"]));
+
+    $this->assertNotNull($user["refresh_token"]);
+  }
 }

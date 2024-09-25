@@ -8,18 +8,35 @@ use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase
 {
-    // Test for UserFactory to create 15 user objects
-    public function testUserFactoryGeneratesUsers(): void
-    {
-        $repository = new UserRepository();
-        $factory = new UserFactory();
+  private UserRepository $userRepository;
+  private UserFactory $userFactory;
 
-        $factory->work(15);
+  protected function setUp(): void
+  {
+      parent::setUp();
+      $this->userRepository = new UserRepository();
+      $this->userFactory = new UserFactory();
+  }
 
-        $records = $repository->findAll();
+  protected function tearDown(): void
+  {
+      parent::tearDown();
 
-        $this->assertCount(15, $records);
+      $this->userRepository->clearTable();
+  }
 
-        $factory->done();
-    }
+  public function testUserFactoryGeneratesAndDeletesUsers(): void
+  {
+    $this->userFactory->work(15);
+
+    $records = $this->userRepository->findAll();
+
+    $this->assertCount(15, $records);
+
+    $this->userFactory->done();
+
+    $deletedRecords = $this->userRepository->findAll();
+
+    $this->assertCount(0, $deletedRecords);
+  }
 }

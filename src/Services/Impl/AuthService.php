@@ -7,7 +7,6 @@ use App\Exceptions\EmailException;
 use App\Exceptions\PasswordException;
 use App\Exceptions\SessionException;
 use App\Exceptions\TokenException;
-use App\Exceptions\UserException;
 use App\Repositories\UserRepository;
 use App\Repositories\UserRolesRepository;
 use App\Services\Meta\AuthServiceMeta;
@@ -25,43 +24,36 @@ class AuthService implements AuthServiceMeta
         $this->userRolesRepository = new UserRolesRepository();
     }
 
-    protected function validateCredentials($credentials): void
-    {
-        if (!Validator::validateEmail($credentials['email'])) {
-            throw EmailException::invalidFormat();
-        }
-        if (!Validator::validatePassword($credentials['password'])) {
-            throw PasswordException::invalidFormat();
-        }
-    }
-
     public function register(array $credentials): void
     {
-        Validator::validate([
-            "email" => "required|max:50"
+        $data = Validator::validate([
+            "name" => ["required", "max:255"],
+            "email" => ["required", "max:255", fn($email) => Validator::validateEmail($email)],
+            "password" => ["required", "min:8", "max:20", fn($password) => Validator::validatePassword($password)],
         ], $credentials);
 
-        $this->validateCredentials($credentials);
-
-        if ($credentials['password'] !== $credentials['confirm_password']) {
+        if ($data['password'] !== $data['confirm_password']) {
             throw PasswordException::doesntMatch();
         }
 
-        $userExists = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
+        $userExists = $this->repository->findOneWhere("email = " . "'" . $data['email'] . "'");
         if ((!empty($userExists))) {
             throw EmailException::alreadyExists();
         }
 
         $this->repository->create([
-            "name" => $credentials["name"],
-            "email" => $credentials["email"],
-            "password" => Validator::hashPassword($credentials["password"]),
+            "name" => $data["name"],
+            "email" => $data["email"],
+            "password" => Validator::hashPassword($data["password"]),
         ]);
     }
 
     public function login(array $credentials)
     {
-      $this->validateCredentials($credentials);
+      Validator::validate([
+        "email" => ["required", "max:255", fn($email) => Validator::validateEmail($email)],
+        "password" => ["required", "min:8", "max:20", fn($password) => Validator::validatePassword($password)],
+      ], $credentials);
 
       // Find matching user
       $user = $this->repository->findOneWhere("email = " . "'" . $credentials['email'] . "'");
@@ -117,7 +109,7 @@ class AuthService implements AuthServiceMeta
 
         $newPassword = Validator::hashPassword($data["new_password"]);
 
-        $this->updateAuthorizedUser(["password" => $newPassword]);
+        $this->updateAuthenticatedUser(["password" => $newPassword]);
     }
 
     public function updateAuthenticatedUser($data): void
@@ -171,14 +163,13 @@ class AuthService implements AuthServiceMeta
 
     private function setAccessToken(string $accessToken): void
     {
-        setcookie("token", $accessToken, [
-          "expires" => time() + 86400,
-          "path" => "/",
-          "domain" => "",
-          "secure" => true,
-          "httponly" => true,
-          "samesite" => "Lax"
-        ]);
-      }
+      setcookie("token", $accessToken, [
+        "expires" => time() + 86400,
+        "path" => "/",
+        "domain" => "",
+        "secure" => true,
+        "httponly" => true,
+        "samesite" => "Lax"
+      ]);
     }
 }

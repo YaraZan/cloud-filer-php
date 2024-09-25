@@ -5,8 +5,8 @@ namespace App\Core;
 /** Require app config variables */
 require_once __DIR__ . "/../Config/config.php";
 
+use App\Exceptions\DatabaseException;
 use PDO, PDOException;
-use RuntimeException;
 
 /**
  * Base class for entity repositories
@@ -25,7 +25,7 @@ abstract class DB
 
     /**
      * Returns repository table name
-     * @return string 
+     * @return string
      */
     public function table(): string
     {
@@ -46,8 +46,8 @@ abstract class DB
                     DB_PASS
                 );
                 self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
+            } catch (PDOException) {
+              throw DatabaseException::errorExceutingQuery();
             }
         }
         return self::$conn;
@@ -55,17 +55,17 @@ abstract class DB
 
     /**
      * Executes sql string and returns database response
-     * 
-     * @param string $sql 
+     *
+     * @param string $sql
      * SQL query string
 
-     * @param array $params 
+     * @param array $params
      * An array of insert params
-     * 
-     * @param bool $fetchAll 
+     *
+     * @param bool $fetchAll
      * Fetch all objects
-     * 
-     * @return array 
+     *
+     * @return array
      * Database response
      */
     protected static function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
@@ -73,18 +73,18 @@ abstract class DB
         try {
             $stmt = self::getConnection()->prepare($sql);
             $stmt->execute($params);
-    
+
             if (!$fetchAll) {
                 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 return $result ?: [];
             }
-    
+
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return $result ?: [];
-        } catch (\PDOException $e) {
-            throw new \RuntimeException("Database query error: " . $e->getMessage());
+        } catch (\PDOException) {
+            throw DatabaseException::errorExceutingQuery();
         }
     }
 
@@ -131,13 +131,13 @@ abstract class DB
     public function clearTable(): void
     {
         $sql = "DELETE FROM " . $this->tableName;
-        
+
         self::executeQuery($sql);
     }
 
     /**
      * Execute raw SQL query
-     * 
+     *
      * @param string $sql Raw SQL query
      * @return array
      */
@@ -145,7 +145,7 @@ abstract class DB
     {
         return self::executeQuery($sql);
     }
-    
+
     /**
      * Fetch all records in repository
      * @return array
@@ -160,10 +160,10 @@ abstract class DB
 
     /**
      * Fetch one record in repository
-     * 
+     *
      * @param int $id
      * Id of searching record
-     * 
+     *
      * @return array
      */
     public function findOne(int $id): array
@@ -176,10 +176,10 @@ abstract class DB
 
     /**
      * Fetch all records in repository that match condition
-     * 
+     *
      * @param string $query
      * SQL query with condition
-     * 
+     *
      * @return array
      */
     public function findWhere(string $query): array
@@ -192,10 +192,10 @@ abstract class DB
 
     /**
      * Fetch first record in repository that matches condition
-     * 
+     *
      * @param string $query
      * SQL query with condition
-     * 
+     *
      * @return array
      */
     public function findOneWhere(string $query): array
@@ -208,13 +208,13 @@ abstract class DB
 
     /**
      * Create a new record in repository
-     * 
+     *
      * @param array $data
      * An associative array representing a new record
-     * 
+     *
      * @return void
      */
-    public function create(array $data): void 
+    public function create(array $data): void
     {
         $sql = "INSERT INTO " . $this->tableName . " (";
         $columns = [];
@@ -234,13 +234,13 @@ abstract class DB
 
     /**
      * Update a record in repository
-     * 
+     *
      * @param int $id
      * Id of updating record
-     * 
+     *
      * @param array $data
      * An associative array with updated records data
-     * 
+     *
      * @return void
      */
     public function update(int $id, array $data): void
@@ -264,10 +264,10 @@ abstract class DB
 
     /**
      * Delete a record in repository
-     * 
+     *
      * @param int $id
      * Id of deleting record
-     * 
+     *
      * @return void
      */
     public function delete(int $id): void

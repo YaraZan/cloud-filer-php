@@ -25,28 +25,24 @@ abstract class Factory
 
     /**
      * Finds and instantiates the matching repository by factory class name
-     * 
+     *
      * @return mixed Repository instance
      */
     protected function getMatchingRepository()
     {
-        // Get the class name of the child factory (e.g., 'UserFactory')
         $factoryClass = (new ReflectionClass($this))->getShortName();
 
-        // Replace 'Factory' with 'Repository' to get the repository class name
         $repositoryClass = str_replace('Factory', 'Repository', $factoryClass);
 
-        // Complete the namespace (adjust to your actual namespace)
         $repositoryClass = "App\\Repositories\\" . $repositoryClass;
 
-        // Check if the repository class exists and instantiate it
         if (class_exists($repositoryClass)) {
             return new $repositoryClass();
         }
 
         throw new \Exception("Repository class $repositoryClass not found.");
     }
-    
+
     private function generateRecord(array $data): void
     {
         foreach ($data as $column => $generate) {
@@ -62,7 +58,7 @@ abstract class Factory
         $this->repository::beginTransaction();
 
         try {
-            for ($i=0; $i < $numRecords; $i++) { 
+            for ($i=0; $i < $numRecords; $i++) {
                 $this->generateRecord($data);
                 $this->seededIds[] = $this->repository::getLastInsertedId();
             }
@@ -74,7 +70,7 @@ abstract class Factory
             throw new Exception("Error while trying to seed");
         }
     }
-    
+
     public abstract function work(int $numRecords): void;
 
     public function done(): void

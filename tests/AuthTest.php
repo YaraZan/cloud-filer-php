@@ -5,8 +5,7 @@ namespace Tests;
 require_once __DIR__ . '/../src/Exceptions/AuthExceptions.php';
 require_once __DIR__ . '/../src/Exceptions/ValidatorExceptions.php';
 
-use App\Exceptions\EmailException;
-use App\Exceptions\PasswordException;
+use App\Exceptions\AuthException;
 use App\Exceptions\ValidatorException;
 use App\Repositories\UserRepository;
 use App\Services\Impl\AuthService;
@@ -33,7 +32,7 @@ class AuthTest extends TestCase
 
   public function testUserCannotRegisterWithInvalidEmail(): void
   {
-    $this->expectException(EmailException::class);
+    $this->expectException(AuthException::class);
 
     $invalidEmailUser = [
         "name" => "John Doe",
@@ -103,7 +102,7 @@ class AuthTest extends TestCase
 
   public function testUserCannotRegisterIfPasswordsDoesntMatch(): void
   {
-    $this->expectException(PasswordException::class);
+    $this->expectException(AuthException::class);
 
     $existingUser = [
         "name" => "John Doe",
@@ -117,7 +116,7 @@ class AuthTest extends TestCase
 
   public function testUserCannotRegisterIfUserWithProvidedEmailAlreadyExists(): void
   {
-    $this->expectException(EmailException::class);
+    $this->expectException(AuthException::class);
 
     $existingUser = [
         "name" => "John Doe",
@@ -147,5 +146,41 @@ class AuthTest extends TestCase
     $user = $this->userRepository->findOneWhere(sprintf("email = '%s'", $validUser["email"]));
 
     $this->assertNotEmpty($user);
+  }
+
+  public function testUserCannotLoginWithNotExistingEmail(): void
+  {
+    $this->expectException(AuthException::class);
+
+    $validUser = [
+        "name" => "John Doe",
+        "email" => "johndoe@example.com",
+        "password" => "ValidPass123#%",
+        "confirm_password" => "ValidPass123#%"
+    ];
+
+    $this->authService->register($validUser);
+
+    $validUser["email"] = "dummy_email@example.com";
+
+    $this->authService->login($validUser);
+  }
+
+  public function testUserCannotLoginWithWrongPassword(): void
+  {
+    $this->expectException(AuthException::class);
+
+    $validUser = [
+        "name" => "John Doe",
+        "email" => "johndoe@example.com",
+        "password" => "ValidPass123#%",
+        "confirm_password" => "ValidPass123#%"
+    ];
+
+    $this->authService->register($validUser);
+
+    $validUser["password"] = "ValidPass1234#%";
+
+    $this->authService->login($validUser);
   }
 }

@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 /**
- * Abstract class to determine user exceptions.
+ * Abstract class to determine validator exceptions.
  */
 abstract class ValidatorException extends BaseException {};
 

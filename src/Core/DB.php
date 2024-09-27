@@ -5,14 +5,14 @@ namespace App\Core;
 /** Require app config variables */
 require_once __DIR__ . "/../Config/config.php";
 
+use App\Exceptions\DatabaseException;
 use PDO, PDOException;
-use RuntimeException;
 
 /**
  * Base class for entity repositories
  * Used for connection to remote database.
  */
-class DB
+abstract class DB
 {
     /** Table name */
     protected string $tableName;
@@ -25,7 +25,7 @@ class DB
 
     /**
      * Returns repository table name
-     * @return string 
+     * @return string
      */
     public function table(): string
     {
@@ -46,8 +46,8 @@ class DB
                     DB_PASS
                 );
                 self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
+            } catch (PDOException) {
+              throw DatabaseException::errorExceutingQuery();
             }
         }
         return self::$conn;
@@ -55,17 +55,17 @@ class DB
 
     /**
      * Executes sql string and returns database response
-     * 
-     * @param string $sql 
+     *
+     * @param string $sql
      * SQL query string
 
-     * @param array $params 
+     * @param array $params
      * An array of insert params
-     * 
-     * @param bool $fetchAll 
+     *
+     * @param bool $fetchAll
      * Fetch all objects
-     * 
-     * @return array 
+     *
+     * @return array
      * Database response
      */
     protected static function executeQuery(string $sql, array $params = [], bool $fetchAll = true): array
@@ -73,24 +73,71 @@ class DB
         try {
             $stmt = self::getConnection()->prepare($sql);
             $stmt->execute($params);
-    
+
             if (!$fetchAll) {
                 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 return $result ?: [];
             }
-    
+
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return $result ?: [];
-        } catch (\PDOException $e) {
-            throw new \RuntimeException("Database query error: " . $e->getMessage());
+        } catch (\PDOException) {
+            throw DatabaseException::errorExceutingQuery();
         }
     }
 
     /**
+     * Begin a database transaction.
+     * @return void
+     */
+    public static function beginTransaction(): void
+    {
+        self::getConnection()->beginTransaction();
+    }
+
+    /**
+     * Commit the current transaction.
+     * @return void
+     */
+    public static function commitTransaction(): void
+    {
+        self::getConnection()->commit();
+    }
+
+    /**
+     * Roll back the current transaction.
+     * @return void
+     */
+    public static function rollbackTransaction(): void
+    {
+        self::getConnection()->rollBack();
+    }
+
+    /**
+     * Roll back the current transaction.
+     * @return int Returned id
+     */
+    public static function getLastInsertedId(): int
+    {
+        return self::getConnection()->lastInsertId();
+    }
+
+    /**
+     * Clear all rows from the current repository's table.
+     * @return void
+     */
+    public function clearTable(): void
+    {
+        $sql = "DELETE FROM " . $this->tableName;
+
+        self::executeQuery($sql);
+    }
+
+    /**
      * Execute raw SQL query
-     * 
+     *
      * @param string $sql Raw SQL query
      * @return array
      */
@@ -98,7 +145,7 @@ class DB
     {
         return self::executeQuery($sql);
     }
-    
+
     /**
      * Fetch all records in repository
      * @return array
@@ -113,10 +160,10 @@ class DB
 
     /**
      * Fetch one record in repository
-     * 
+     *
      * @param int $id
      * Id of searching record
-     * 
+     *
      * @return array
      */
     public function findOne(int $id): array
@@ -129,10 +176,10 @@ class DB
 
     /**
      * Fetch all records in repository that match condition
-     * 
+     *
      * @param string $query
      * SQL query with condition
-     * 
+     *
      * @return array
      */
     public function findWhere(string $query): array
@@ -145,10 +192,10 @@ class DB
 
     /**
      * Fetch first record in repository that matches condition
-     * 
+     *
      * @param string $query
      * SQL query with condition
-     * 
+     *
      * @return array
      */
     public function findOneWhere(string $query): array
@@ -161,13 +208,13 @@ class DB
 
     /**
      * Create a new record in repository
-     * 
+     *
      * @param array $data
      * An associative array representing a new record
-     * 
+     *
      * @return void
      */
-    public function create(array $data): void 
+    public function create(array $data): void
     {
         $sql = "INSERT INTO " . $this->tableName . " (";
         $columns = [];
@@ -187,13 +234,13 @@ class DB
 
     /**
      * Update a record in repository
-     * 
+     *
      * @param int $id
      * Id of updating record
-     * 
+     *
      * @param array $data
      * An associative array with updated records data
-     * 
+     *
      * @return void
      */
     public function update(int $id, array $data): void
@@ -217,10 +264,10 @@ class DB
 
     /**
      * Delete a record in repository
-     * 
+     *
      * @param int $id
      * Id of deleting record
-     * 
+     *
      * @return void
      */
     public function delete(int $id): void

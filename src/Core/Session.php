@@ -2,9 +2,6 @@
 
 namespace App\Core;
 
-use App\Utils\Tokenizer;
-use Exception;
-
 /**
  * Session management
  */
@@ -12,7 +9,7 @@ class Session
 {
     /**
      * Start session
-     * 
+     *
      * @return void
      */
     public static function start(): void
@@ -23,40 +20,8 @@ class Session
     }
 
     /**
-     * Create session instance 
-     * 
-     * @param string $token Access token
-     * @return void
-     */
-    public static function create(string $token): void
-    {
-        self::start();
-
-        $_SESSION["token"] = $token;
-
-        self::regenerate();
-    }
-
-    /**
-     * Get currently authorized user
-     * 
-     * @return array|null
-     */
-    public static function user(): array
-    {
-        $token = self::get("token");
-        if (!isset($token)) {
-            throw new Exception('Not authorized', 401);
-        }
-
-        $decodedToken = Tokenizer::decode($token);
-
-        return $decodedToken["user"];
-    }
-
-    /**
      * Get session key
-     * 
+     *
      * @param string $key Key name
      * @return mixed Key value
      */
@@ -68,7 +33,7 @@ class Session
 
     /**
      * Set session key
-     * 
+     *
      * @param string $key Name of key
      * @param $value Key value
      * @return void
@@ -81,7 +46,7 @@ class Session
 
     /**
      * Destroy session
-     * 
+     *
      * @return void
      */
     public static function destroy(): void
@@ -93,7 +58,7 @@ class Session
 
     /**
      * Regenerate session
-     * 
+     *
      * @return void
      */
     private static function regenerate(): void

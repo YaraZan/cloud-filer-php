@@ -43,19 +43,6 @@ class TokenException extends AuthException
     }
 }
 
-class SessionException extends AuthException
-{
-  public static function noUser(): self
-  {
-    return self::errorUnauthenticated();
-  }
-
-  public static function wrongUser(): self
-  {
-    return self::errorUnauthenticated();
-  }
-}
-
 class EmailException extends AuthException
 {
   public static function invalidFormat(): self

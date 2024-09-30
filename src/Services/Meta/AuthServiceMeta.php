@@ -2,6 +2,8 @@
 
 namespace App\Services\Meta;
 
+use App\Core\Request;
+
 interface AuthServiceMeta
 {
     /**
@@ -17,29 +19,31 @@ interface AuthServiceMeta
     /**
      * Logout user
      *
+     * @param Request $request Incoming request
      * @return void
      */
-    public function logout(): void;
+    public function logout(array $user): void;
 
     /**
      * Reset user password
      *
-     * @param array $data Request data with old, new
-     * and confirm passwords.
+     * @param Request $request Incoming request
      * @return void
      */
-    public function resetPassword(array $data);
+    public function resetPassword(array $user, array $data): void;
 
     /**
      * Update currently authenticated user
      *
-     * @param array $data Request data with upated columns
-     * for authenticated user.
+     * @return void
      */
-    public function updateAuthenticatedUser(array $data);
+    public function updateAuthenticatedUser(array $user, array $data): void;
 
     /**
      * Authenticate client token
+     *
+     * @param Request $request Incoming request
+     * @return void
      */
-    public function authenticate(string $accessToken): void;
+    public function authenticate(array $user): void;
 }

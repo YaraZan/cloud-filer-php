@@ -2,7 +2,9 @@
 
 namespace App\Core;
 
+use App\Controllers\AdminController;
 use App\Controllers\AuthController;
+use App\Middleware\AdminMiddleware;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
@@ -20,7 +22,11 @@ class Router
         $this->registerRoutesarray([
             "POST /register" => new Route(AuthController::class, "register"),
             "POST /login" => new Route(AuthController::class, "login"),
-            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", AuthMiddleware::class),
+            "POST /resetPassword" => new Route(AuthController::class, "resetPassword", [AuthMiddleware::class]),
+            "GET /admin/users" => new Route(AdminController::class, "getAllUsers", [AuthMiddleware::class, AdminMiddleware::class]),
+            "GET /admin/user" => new Route(AdminController::class, "getUser", [AuthMiddleware::class, AdminMiddleware::class]),
+            "DELETE /admin/user/delete" => new Route(AdminController::class, "deleteUser", [AuthMiddleware::class, AdminMiddleware::class]),
+            "UPDATE /admin/user/update" => new Route(AdminController::class, "updateUser", [AuthMiddleware::class, AdminMiddleware::class]),
         ]);
     }
 
@@ -46,7 +52,7 @@ class Router
     public function processRequest(Request $request): void
     {
         $method = $request->getMethod();
-        $route = $request->getRoute();
+        $route = parse_url((string) $request->getRoute(), PHP_URL_PATH);
         $routeKey = $method . ' ' . $route;
 
         try {

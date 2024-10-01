@@ -6,7 +6,7 @@ use App\Repositories\UserRepository;
 use App\Services\Meta\AdminServiceMeta;
 use App\Services\Impl\AuthService;
 
-class AdminService extends AdminServiceMeta
+class AdminService implements AdminServiceMeta
 {
   private UserRepository $userRepository;
   private AuthService $authService;

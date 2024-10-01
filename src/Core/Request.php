@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use App\Utils\Tokenizer;
+
 /** Require app config variables */
 require_once __DIR__ . "/../Config/config.php";
 
@@ -39,6 +41,11 @@ class Request
         return $this->data;
     }
 
+    public function updateData(string $key, $value): array
+    {
+        return $this->data[$key] = $value;
+    }
+
     /**
      * Get request headers
      */
@@ -48,9 +55,31 @@ class Request
 
     /**
      * Get request cookies
+     *
+     * @return array Associative array with request cookies
      */
     public function getCookies(): array {
         return $_COOKIE;
+    }
+
+    /**
+     * Get user from request
+     */
+    public function getUser(): array
+    {
+      $cookies = $this->getCookies();
+
+      return $cookies["token"] ? (Tokenizer::decode($cookies["token"]))["user"] : null;
+    }
+
+    /**
+     * Get user from request
+     */
+    public function getToken(): array
+    {
+      $cookies = $this->getCookies();
+
+      return $cookies["token"] ? Tokenizer::decode($cookies["token"]) : null;
     }
 
     /**

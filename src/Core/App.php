@@ -20,6 +20,7 @@ class App
     {
         self::$services['userService'] = new \App\Services\Impl\UserService();
         self::$services['authService'] = new \App\Services\Impl\AuthService();
+        self::$services['adminService'] = new \App\Services\Impl\AdminService();
     }
 
     /**

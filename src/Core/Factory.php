@@ -13,70 +13,77 @@ use ReflectionClass;
  */
 abstract class Factory
 {
-    protected $faker;
-    protected $repository;
-    private array $seededIds = [];
+  protected $faker;
+  protected $repository;
+  private array $seededIds = [];
+  private array $seededRows = [];
 
-    public function __construct()
-    {
-        $this->faker = FakerFactory::create();
-        $this->repository = $this->getMatchingRepository();
+  public function __construct()
+  {
+    $this->faker = FakerFactory::create();
+    $this->repository = $this->getMatchingRepository();
+  }
+
+  /**
+   * Finds and instantiates the matching repository by factory class name
+   *
+   * @return mixed Repository instance
+   */
+  protected function getMatchingRepository()
+  {
+    $factoryClass = (new ReflectionClass($this))->getShortName();
+
+    $repositoryClass = str_replace('Factory', 'Repository', $factoryClass);
+
+    $repositoryClass = "App\\Repositories\\" . $repositoryClass;
+
+    if (class_exists($repositoryClass)) {
+      return new $repositoryClass();
     }
 
-    /**
-     * Finds and instantiates the matching repository by factory class name
-     *
-     * @return mixed Repository instance
-     */
-    protected function getMatchingRepository()
-    {
-        $factoryClass = (new ReflectionClass($this))->getShortName();
+    throw new \Exception("Repository class $repositoryClass not found.");
+  }
 
-        $repositoryClass = str_replace('Factory', 'Repository', $factoryClass);
-
-        $repositoryClass = "App\\Repositories\\" . $repositoryClass;
-
-        if (class_exists($repositoryClass)) {
-            return new $repositoryClass();
-        }
-
-        throw new \Exception("Repository class $repositoryClass not found.");
+  private function generateRecord(array $data): array
+  {
+    foreach ($data as $column => $generate) {
+      $record[$column] = $generate();
     }
 
-    private function generateRecord(array $data): void
-    {
-        foreach ($data as $column => $generate) {
-            $record[$column] = $generate();
-        }
+    $this->repository->create($record);
 
-        $this->repository->create($record);
+    $record["id"] = $this->repository::getLastInsertedId();
+
+    return $record;
+  }
+
+  protected function seed(int $numRecords, array $data): array
+  {
+    $this->repository->clearTable();
+    $this->repository::beginTransaction();
+
+    try {
+      for ($i = 0; $i < $numRecords; $i++) {
+        $this->seededRows[] = $this->generateRecord($data);
+        $this->seededIds[] = $this->repository::getLastInsertedId();
+      }
+
+      $this->repository::commitTransaction();
+
+      return $this->seededRows;
+    } catch (PDOException) {
+      $this->repository::rollbackTransaction();
+
+      throw new Exception("Error while trying to seed");
     }
+  }
 
-    protected function seed(int $numRecords, array $data): void
-    {
-        $this->repository->clearTable();
-        $this->repository::beginTransaction();
+  public abstract function work(int $numRecords): array;
 
-        try {
-            for ($i=0; $i < $numRecords; $i++) {
-                $this->generateRecord($data);
-                $this->seededIds[] = $this->repository::getLastInsertedId();
-            }
+  public function done(): void
+  {
+    $sql = "DELETE FROM " . $this->repository->table() . " WHERE id IN (" . implode(",", $this->seededIds) . ")";
 
-            $this->repository::commitTransaction();
-        } catch (PDOException) {
-            $this->repository::rollbackTransaction();
-
-            throw new Exception("Error while trying to seed");
-        }
-    }
-
-    public abstract function work(int $numRecords): void;
-
-    public function done(): void
-    {
-        $sql = "DELETE FROM " . $this->repository->table() . " WHERE id IN (" . implode(",", $this->seededIds) . ")";
-
-        $this->repository::raw($sql);
-    }
+    $this->repository::raw($sql);
+  }
 }

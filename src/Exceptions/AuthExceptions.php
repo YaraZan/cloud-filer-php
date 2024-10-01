@@ -5,54 +5,52 @@ namespace App\Exceptions;
 /**
  * Abstract class to determine user exceptions.
  */
-abstract class AuthException extends BaseException {};
+abstract class AuthException extends BaseException
+{
+  public static function notAuthorized(): self
+  {
+    return self::errorUnauthorized();
+  }
+
+  public static function notAuthenticated(): self
+  {
+    return self::errorUnauthenticated();
+  }
+};
 
 /**
  * Token exceptionxs.
  */
 class TokenException extends AuthException
 {
-    public static function doesntExist(): self
-    {
-        return self::errorUnauthenticated();
-    }
-
-    public static function invalid(): self
-    {
-        return self::errorUnauthenticated();
-    }
-
-    public static function refreshTokenExpired(): self
-    {
-        return self::errorExpired("Session expired");
-    }
-
-    public static function encodingTokenException(): self
-    {
-        return self::errorInternal();
-    }
-
-    public static function decodingTokenException(): self
-    {
-        return self::errorInternal();
-    }
-
-    public static function createTokenException(): self
-    {
-        return self::errorInternal();
-    }
-}
-
-class SessionException extends AuthException
-{
-  public static function noUser(): self
+  public static function doesntExist(): self
   {
     return self::errorUnauthenticated();
   }
 
-  public static function wrongUser(): self
+  public static function invalid(): self
   {
     return self::errorUnauthenticated();
+  }
+
+  public static function refreshTokenExpired(): self
+  {
+    return self::errorUnauthenticated();
+  }
+
+  public static function encodingTokenException(): self
+  {
+    return self::errorInternal();
+  }
+
+  public static function decodingTokenException(): self
+  {
+    return self::errorInternal();
+  }
+
+  public static function createTokenException(): self
+  {
+    return self::errorInternal();
   }
 }
 

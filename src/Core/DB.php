@@ -119,9 +119,9 @@ abstract class DB
      * Roll back the current transaction.
      * @return int Returned id
      */
-    public static function getLastInsertedId(): int
+    public static function getLastInsertedId(): ?int
     {
-        return self::getConnection()->lastInsertId();
+        return (int) self::getConnection()->lastInsertId() ?? null;
     }
 
     /**
@@ -182,7 +182,7 @@ abstract class DB
      *
      * @return array
      */
-    public function findWhere(string $query): array
+    public function findAllWhere(string $query): array
     {
         $sql = "SELECT * FROM " . $this->tableName . " WHERE " . $query;
         $res = self::executeQuery($sql);

@@ -4,6 +4,7 @@ namespace App\Services\Impl;
 
 use App\Core\Request;
 use App\Core\Session;
+use App\Exceptions\AuthException;
 use App\Exceptions\EmailException;
 use App\Exceptions\PasswordException;
 use App\Exceptions\SessionException;
@@ -66,7 +67,7 @@ class AuthService implements AuthServiceMeta
     }
 
     // Add user roles
-    $roles = $this->userRolesRepository->findWhere("user_id = " . $user["id"]);
+    $roles = $this->userRolesRepository->findAllWhere("user_id = " . $user["id"]);
     $user["roles"] = $roles;
 
     // Generate access and refresh tokens pair
@@ -83,9 +84,6 @@ class AuthService implements AuthServiceMeta
   {
     // Set refresh_token to null
     $this->repository->update($user["id"], ["refresh_token" => null]);
-
-    // Throw expired exception
-    throw TokenException::refreshTokenExpired();
   }
 
   public function resetPassword(array $user, array $data): void
@@ -120,9 +118,11 @@ class AuthService implements AuthServiceMeta
       // Check if refresh token is expired
       if ($refreshToken["exp"] <= round(microtime(true))) {
         $this->logout($user);
+
+        throw AuthException::notAuthenticated();
       } else {
         // Add user roles
-        $roles = $this->userRolesRepository->findWhere("user_id = " . $user["id"]);
+        $roles = $this->userRolesRepository->findAllWhere("user_id = " . $user["id"]);
         $user["roles"] = $roles;
 
         $newAccessToken = Tokenizer::createAccessToken($user);

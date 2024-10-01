@@ -11,6 +11,11 @@ abstract class AuthException extends BaseException
   {
     return self::errorUnauthorized();
   }
+
+  public static function notAuthenticated(): self
+  {
+    return self::errorUnauthenticated();
+  }
 };
 
 /**

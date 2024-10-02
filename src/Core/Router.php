@@ -82,7 +82,7 @@ class Router
      */
     public static function redirect(string $url, int $statusCode = 302): void
     {
-        header("Location: " . BASE_URI . $url, true, $statusCode);
+        header("Location: " . $_ENV["API_BASE_URL"] . $url, true, $statusCode);
         exit(); // Make sure to stop script execution after redirect
     }
 }

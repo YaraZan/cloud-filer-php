@@ -4,9 +4,6 @@ namespace App\Core;
 
 use App\Utils\Tokenizer;
 
-/** Require app config variables */
-require_once __DIR__ . "/../Config/config.php";
-
 /**
  * Stores variables and data passed via HTTP request
  */
@@ -88,7 +85,7 @@ class Request
      */
     public function getRoute(): string
     {
-        return str_replace(BASE_URI, '', $this->url);
+        return str_replace($_ENV["API_BASE_URL"], '', $this->url);
     }
 
     /**

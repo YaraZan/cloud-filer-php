@@ -2,9 +2,6 @@
 
 namespace App\Core;
 
-/** Require app config variables */
-require_once __DIR__ . "/../Config/config.php";
-
 use App\Exceptions\DatabaseException;
 use PDO, PDOException;
 
@@ -41,9 +38,9 @@ abstract class DB
         if (self::$conn === null) {
             try {
                 self::$conn = new PDO(
-                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
-                    DB_USER,
-                    DB_PASS
+                    "mysql:host=" . $_ENV["DB_HOST"] . ";dbname=" . $_ENV["DB_NAME"],
+                    $_ENV["DB_USER"],
+                    $_ENV["DB_PASS"]
                 );
                 self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException) {

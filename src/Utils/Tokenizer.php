@@ -2,8 +2,6 @@
 
 namespace App\Utils;
 
-require_once __DIR__ . "/../Config/config.php";
-
 use App\Exceptions\TokenException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -13,7 +11,7 @@ class Tokenizer
   public static function encode(mixed $payload): string
   {
     try {
-      return JWT::encode($payload, JWT_SECRET, 'HS256');
+      return JWT::encode($payload, $_ENV["TOKEN_SECRET"], 'HS256');
     } catch (\Throwable) {
       throw TokenException::encodingTokenException();
     }
@@ -22,7 +20,7 @@ class Tokenizer
   public static function decode(string $jwt): array
   {
     try {
-      $decoded = JWT::decode($jwt, new Key(JWT_SECRET, 'HS256'));
+      $decoded = JWT::decode($jwt, new Key($_ENV["TOKEN_SECRET"], 'HS256'));
       return json_decode(json_encode($decoded), true);
     } catch (\Throwable) {
       throw TokenException::decodingTokenException();
@@ -33,7 +31,7 @@ class Tokenizer
   {
     try {
       $accessToken = [
-        "exp" => round(microtime(true) * 1000) + (ACCESS_TOKEN_EXP),
+        "exp" => round(microtime(true) * 1000) + ($_ENV["TOKEN_ACCESS_EXP"]),
         "iat" => round(microtime(true)),
         "did" => hash('sha256', $_SERVER["HTTP_USER_AGENT"] . $_SERVER["REMOTE_ADDR"]),
         "user" => $user,
@@ -48,7 +46,7 @@ class Tokenizer
   {
     try {
       $refreshToken = [
-        "exp" => round(microtime(true) * 1000) + (REFRESH_TOKEN_EXP),
+        "exp" => round(microtime(true) * 1000) + ($_ENV["TOKEN_REFRESH_EXP"]),
         "iat" => round(microtime(true)),
         "uid" => $user["id"],
       ];
